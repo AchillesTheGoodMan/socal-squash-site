@@ -832,6 +832,12 @@
   .person h3{ font-family:var(--display); font-size:1.35rem; margin:0 0 2px; color:var(--court-blue); }
   .person .role{ font-size:.82rem; letter-spacing:.08em; text-transform:uppercase; color:var(--pink-text); font-weight:600; margin:0 0 8px; }
   .person p{ font-size:.92rem; color:var(--slate); margin:0; }
+  .people-sub{ font-family:var(--display); font-size:1.6rem; color:var(--court-blue); margin:44px 0 18px; }
+  .past-list{ list-style:none; padding:0; margin:0; max-width:480px; }
+  .past-list li{ display:flex; justify-content:space-between; gap:16px; padding:10px 0; border-bottom:1px solid rgba(91,26,139,.18); }
+  .past-list .yrs{ color:var(--pink-text); font-weight:600; }
+  .person .avatar{ position:relative; overflow:hidden; width:120px; height:120px; }
+  .person .avatar img{ position:absolute; inset:0; width:100%; height:100%; object-fit:cover; object-position:center top; }
 </style>
 </head>
 <body>
@@ -855,17 +861,43 @@
   <div class="wrap">
     <div class="section-head">
       <h2>People</h2>
-      <p>The volunteers and board members who keep squash growing across Southern California. Questions? Email <a href="mailto:info@socalsquash.org">info@socalsquash.org</a>.</p>
+      <p>The volunteers who keep squash growing across Southern California. Questions? Email <a href="mailto:info@socalsquash.org">info@socalsquash.org</a>.</p>
     </div>
-    <!-- EDIT ME: replace "Name Here", the initials, the role and the blurb for each person. Copy a block to add more. -->
+    <h3 class="people-sub">Board</h3>
     <div class="people-grid">
-      <div class="person"><div class="avatar">?</div><h3>Name Here</h3><div class="role">President</div><p>Short bio goes here.</p></div>
-      <div class="person"><div class="avatar">?</div><h3>Name Here</h3><div class="role">Vice President</div><p>Short bio goes here.</p></div>
-      <div class="person"><div class="avatar">?</div><h3>Name Here</h3><div class="role">Treasurer</div><p>Short bio goes here.</p></div>
-      <div class="person"><div class="avatar">?</div><h3>Name Here</h3><div class="role">Secretary</div><p>Short bio goes here.</p></div>
-      <div class="person"><div class="avatar">?</div><h3>Name Here</h3><div class="role">Junior Programs</div><p>Short bio goes here.</p></div>
-      <div class="person"><div class="avatar">?</div><h3>Name Here</h3><div class="role">Tournaments</div><p>Short bio goes here.</p></div>
+      <div class="person"><div class="avatar"><span>PB</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/8e4e8e2c-a896-44b2-8854-5c4e9b39f0a2/Paul+Buck.jfif" alt="Paul Buck" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Paul Buck</h3><div class="role">President</div></div>
+      <div class="person"><div class="avatar"><span>LK</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/ff3ee20b-5f2d-49e3-b236-dfd6d289d55d/Lucas+Kulma.jpg" alt="Lucas Kulma" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Lucas Kulma</h3><div class="role">Treasurer</div></div>
+      <div class="person"><div class="avatar"><span>YS</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/0baf071a-a9ae-440c-a590-e118c93437f3/Yousuf+Siddiqui.jpg" alt="Yousuf Siddiqui" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Yousuf Siddiqui</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>LF</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/3ebb5496-ecc6-40cc-878e-f7dff944c2e4/Laurence+Franklin.jpg" alt="Laurence Franklin" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Laurence Franklin</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>BS</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/37e0f291-ec66-4a7d-82b3-beb823a876d9/Blair+Sadler.jpeg" alt="Blair Sadler" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Blair Sadler</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>WW</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/949c821f-5cc1-45f1-ae60-f8c4281197cc/Walid+Wasfy.jpg" alt="Walid Wasfy" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Walid Wasfy</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>MK</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/98810504-e9b0-4172-ad1d-0e948913ca2c/Micah+Kim.jpeg" alt="Micah Kim" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Micah Kim</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>JJ</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/1abdd1e5-b0ac-412a-848f-eb735850d614/Jason+Jewell.jpg" alt="Jason Jewell" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Jason Jewell</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>AS</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/21ecafd0-2d9d-43d6-898a-65dc9c055a94/America+Sanchez.jpeg" alt="America Sanchez" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>America Sanchez</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>RG</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/50623c17-a3fc-4c21-beac-31924b5da640/RG_headshot_2025.jpg" alt="Robert Graham" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Robert Graham</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>IC</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/4bd9d4a3-89c3-4b6d-bded-9062df160de9/Iago+Cornes.jpg" alt="Iago Cornes" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Iago Cornes</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>DK</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/3eb74eb5-2c64-48cd-9ec4-77f762799dc1/Dan+Karnowsky.jpeg" alt="Dan Karnowsky" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Dan Karnowsky</h3><div class="role">Past President</div></div>
+      <div class="person"><div class="avatar"><span>RS</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/4ddfa1b8-742c-4c22-930d-8677ee27ccfd/Rachel+Scherman.jpg" alt="Rachel Scherman" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Rachel Scherman</h3><div class="role">Board Member</div></div>
+      <div class="person"><div class="avatar"><span>AC</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/494b616f-ee21-40b0-933b-0a46d11649c6/Alexander+Cohen.jpg" alt="Alex Cohen" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Alex Cohen</h3><div class="role">Board Member</div></div>
     </div>
+    <h3 class="people-sub">Junior Board</h3>
+    <div class="people-grid">
+      <div class="person"><div class="avatar"><span>JH</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/e88cd918-65c4-4f3a-876f-98a45464a86b/Justin.jpg" alt="Justin Han" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Justin Han</h3><div class="role">Junior Board</div></div>
+      <div class="person"><div class="avatar"><span>SL</span><img src="https://images.squarespace-cdn.com/content/v1/616eec613fb51d6c517d4b7d/084ef0d3-bd72-42bd-bdf0-d424749dcadc/Sophia_Lee.jpg" alt="Sophie Lee" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></div><h3>Sophie Lee</h3><div class="role">Junior Board</div></div>
+    </div>
+    <h3 class="people-sub">Past Presidents</h3>
+    <ul class="past-list">
+      <li><span>John Dewis</span><span class="yrs">2017–2021</span></li>
+      <li><span>Dan Karnowsky</span><span class="yrs">2007–2017</span></li>
+      <li><span>Robert Graham</span><span class="yrs">2001–2007</span></li>
+      <li><span>Bob Mosier</span><span class="yrs">1993–2001</span></li>
+      <li><span>Eddy Stride</span><span class="yrs">1988–1993</span></li>
+      <li><span>Peter Lowey</span><span class="yrs">1986–1988</span></li>
+      <li><span>Bill Carlin</span><span class="yrs">1984–1986</span></li>
+      <li><span>Terry Eagle</span><span class="yrs">1982–1984</span></li>
+      <li><span>Alan Fox</span><span class="yrs">1980–1982</span></li>
+      <li><span>Greg Stiles</span><span class="yrs">1979–1980</span></li>
+    </ul>
   </div>
 </section>
 
