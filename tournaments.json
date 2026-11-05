@@ -1,5 +1,132 @@
 {
-  "updated": null,
+  "updated": "2026-11-05T04:42:45.665Z",
   "source": "ClubLocker (US Squash), California, sanctioned",
-  "tournaments": []
+  "tournaments": [
+    {
+      "name": "2026 LA Squash Academy Silver",
+      "start": "2026-11-06",
+      "end": "2026-11-07",
+      "venue": "LA Squash Academy",
+      "url": "https://clublocker.com/tournaments/19532"
+    },
+    {
+      "name": "2026 Cal State Doubles Championships",
+      "start": "2026-11-12",
+      "end": "2026-11-14",
+      "venue": "Jonathan Club",
+      "url": "https://clublocker.com/tournaments/20079"
+    },
+    {
+      "name": "2026 Bay Club Fremont Junior Silver",
+      "start": "2026-11-20",
+      "end": "2026-11-21",
+      "venue": "Bay Club Fremont",
+      "url": "https://clublocker.com/tournaments/19587"
+    },
+    {
+      "name": "Squash Zone Open Presented by the Sharan Family",
+      "start": "2026-12-03",
+      "end": "2026-12-04",
+      "venue": "Squash Zone",
+      "url": "https://clublocker.com/tournaments/20117"
+    },
+    {
+      "name": "2026 Bay Club Fremont Junior Gold",
+      "start": "2026-12-10",
+      "end": "2026-12-12",
+      "venue": "Bay Club Fremont",
+      "url": "https://clublocker.com/tournaments/19292"
+    },
+    {
+      "name": "2026 Access Youth Academy Winter Junior Bronze",
+      "start": "2026-12-11",
+      "end": "2026-12-11",
+      "venue": "Access Youth Academy",
+      "url": "https://clublocker.com/tournaments/19852"
+    },
+    {
+      "name": "2027 Bay Club Santa Clara Junior Silver",
+      "start": "2027-01-22",
+      "end": "2027-01-23",
+      "venue": "Bay Club Santa Clara",
+      "url": "https://clublocker.com/tournaments/19553"
+    },
+    {
+      "name": "2027 Pacific Coast Open Doubles Championships",
+      "start": "2027-01-27",
+      "end": "2027-01-30",
+      "venue": "Olympic Club",
+      "url": "https://clublocker.com/tournaments/20076"
+    },
+    {
+      "name": "2027 LA Squash Academy Winter Junior Bronze",
+      "start": "2027-01-29",
+      "end": "2027-01-29",
+      "venue": "LA Squash Academy",
+      "url": "https://clublocker.com/tournaments/19948"
+    },
+    {
+      "name": "2027 LA Squash Academy Junior Silver",
+      "start": "2027-02-12",
+      "end": "2027-02-13",
+      "venue": "LA Squash Academy",
+      "url": "https://clublocker.com/tournaments/19563"
+    },
+    {
+      "name": "2027 LA Squash Academy Gold",
+      "start": "2027-03-04",
+      "end": "2027-03-06",
+      "venue": "LA Squash Academy",
+      "url": "https://clublocker.com/tournaments/19444"
+    },
+    {
+      "name": "2027 Access Youth Academy Spring Junior Bronze",
+      "start": "2027-03-12",
+      "end": "2027-03-12",
+      "venue": "Access Youth Academy",
+      "url": "https://clublocker.com/tournaments/19854"
+    },
+    {
+      "name": "2027 Socal Doubles",
+      "start": "2027-04-01",
+      "end": "2027-04-03",
+      "venue": "Access Youth Academy",
+      "url": "https://clublocker.com/tournaments/20297"
+    },
+    {
+      "name": "2027 Bay Club Fremont Junior Silver",
+      "start": "2027-04-16",
+      "end": "2027-04-17",
+      "venue": "Bay Club Fremont",
+      "url": "https://clublocker.com/tournaments/19575"
+    },
+    {
+      "name": "2027 San Diego Open",
+      "start": "2027-04-16",
+      "end": "2027-04-17",
+      "venue": "Access Youth Academy",
+      "url": "https://clublocker.com/tournaments/19853"
+    },
+    {
+      "name": "2027 Access Youth Academy Junior Silver",
+      "start": "2027-04-30",
+      "end": "2027-05-01",
+      "venue": "Access Youth Academy",
+      "url": "https://clublocker.com/tournaments/19582"
+    },
+    {
+      "name": "2026 Bay Club Santa Clara Junior Silver",
+      "start": "2027-05-14",
+      "end": "2027-05-15",
+      "venue": "Bay Club Santa Clara",
+      "url": "https://clublocker.com/tournaments/19538"
+    },
+    {
+      "name": "2027 LA Squash Championships",
+      "start": "2027-05-20",
+      "end": "2027-05-22",
+      "venue": "LA Squash Academy",
+      "url": "https://clublocker.com/tournaments/20036"
+    }
+  ]
 }
