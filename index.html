@@ -823,6 +823,15 @@
     html{ scroll-behavior: auto; }
     .hero-grid::before{ animation: none; }
   }
+
+  /* ---- People ---- */
+  .people-grid{ display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:20px; }
+  .person{ background:#fff; border:1px solid rgba(91,26,139,.18); border-radius:14px; padding:22px; text-align:center; }
+  .person .avatar{ width:84px; height:84px; border-radius:50%; margin:0 auto 14px; display:grid; place-items:center;
+    background:linear-gradient(135deg,var(--hot-pink),var(--line-red)); color:#fff; font-family:var(--display); font-size:1.9rem; font-weight:700; }
+  .person h3{ font-family:var(--display); font-size:1.35rem; margin:0 0 2px; color:var(--court-blue); }
+  .person .role{ font-size:.82rem; letter-spacing:.08em; text-transform:uppercase; color:var(--pink-text); font-weight:600; margin:0 0 8px; }
+  .person p{ font-size:.92rem; color:var(--slate); margin:0; }
 </style>
 </head>
 <body>
@@ -834,10 +843,10 @@
     </a>
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">Menu</button>
     <nav class="links" id="navLinks">
-      <a href="#events">Events</a>
+      <a href="#tournaments">Events</a>
       <a href="#clubs">Clubs & Courts</a>
       <a href="#involved">Get Involved</a>
-      <a href="#contact">Contact</a>
+      <a href="people.html">People</a>
     </nav>
   </div>
 </header>
@@ -890,7 +899,7 @@
     <h1>SoCal Squash, where the <em>sun</em> <span class="white-part">meets the</span> <em>court</em>.</h1>
     <p class="lede">SoCal Squash is the official US Squash affiliate for the game of squash in Southern California. We are a 501(c)(3) non-profit organization, dedicated to promoting squash and connecting the community. Our region spans as far north as San Luis Obispo, all the way down to San Diego.</p>
     <div class="hero-ctas">
-      <a class="btn btn-primary" href="#events">See Upcoming Events</a>
+      <a class="btn btn-primary" href="#tournaments">See Upcoming Events</a>
       <a class="btn btn-ghost" href="#clubs">Find a Court</a>
     </div>
     <div class="hero-stats">
@@ -903,7 +912,7 @@
 
 <div class="sunset-bands" aria-hidden="true"></div>
 
-<section class="live-feed">
+<section class="live-feed" id="tournaments">
   <div class="wrap panels">
     <div class="panel">
     <div class="section-head">
@@ -943,48 +952,6 @@
   </div>
 </section>
 
-
-<section id="events" style="background: var(--chalk);">
-  <div class="wrap">
-    <div class="section-head">
-      <h2>Events & programs</h2>
-      <p>Tournaments run through US Squash's ClubLocker platform, and the region hosts a few signature programs every year.</p>
-    </div>
-    <div class="schedule">
-      <div class="event-row">
-        <div class="event-date"><span class="day">SEP</span><span class="mon">ANNUAL</span></div>
-        <div>
-          <div class="event-name">Women's Squash Week</div>
-          <div class="event-loc">Clinics and mixers at Jonathan Club, Access Youth Academy, and LAAC celebrating women's participation in the sport</div>
-        </div>
-        <div class="event-level">All levels</div>
-        <a class="event-cta" href="#contact">Learn more →</a>
-      </div>
-      <div class="event-row">
-        <div class="event-date"><span class="day">MO</span><span class="mon">MONTHLY</span></div>
-        <div>
-          <div class="event-name">Ladies' Clinic</div>
-          <div class="event-loc">Access Youth Academy, San Diego — an affordable, supportive intro session for women new to the sport</div>
-        </div>
-        <div class="event-level">New players</div>
-        <a class="event-cta" href="#contact">Learn more →</a>
-      </div>
-      <div class="event-row">
-        <div class="event-date"><span class="day">LA</span><span class="mon">PUBLIC</span></div>
-        <div>
-          <div class="event-name">PlayLA Squash</div>
-          <div class="event-loc">Free public squash programming expanding across LA parks — always looking for volunteers</div>
-        </div>
-        <div class="event-level">Community</div>
-        <a class="event-cta" href="#involved">Volunteer →</a>
-      </div>
-    </div>
-    <div class="events-foot">
-      <p>Tournaments (open, doubles, juniors) are added throughout the year — Equinox OC, Access Youth Academy, and Jonathan Club run several each season.</p>
-      <a class="btn btn-primary" href="https://ussquash.org/tournaments/" target="_blank" rel="noopener">See the Live Tournament Calendar</a>
-    </div>
-  </div>
-</section>
 
 <section id="clubs" style="background: var(--chalk-dim);">
   <div class="wrap">
@@ -1133,15 +1100,16 @@
     <div>
       <h3>Explore</h3>
       <ul>
-        <li><a href="#events">Events</a></li>
+        <li><a href="#tournaments">Events</a></li>
         <li><a href="#clubs">Clubs & Courts</a></li>
         <li><a href="#involved">Get Involved</a></li>
+        <li><a href="people.html">People</a></li>
       </ul>
     </div>
     <div>
       <h3>Contact</h3>
       <ul>
-        <li><a href="mailto:hello@socalsquash.org">hello@socalsquash.org</a></li>
+        <li><a href="mailto:info@socalsquash.org">info@socalsquash.org</a></li>
         <li><a href="#">Instagram</a></li>
         <li><a href="#">Facebook</a></li>
       </ul>
