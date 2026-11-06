@@ -873,10 +873,15 @@
   .zoom{ right:10px; top:10px; display:flex; flex-direction:column; gap:6px; }
   .zoom button{ width:40px; height:40px; font:400 20px 'Press Start 2P','Courier New',monospace; background:#FFF1D1; color:#2B0B4F; border:3px solid #000; box-shadow:3px 3px 0 var(--hot-pink); cursor:pointer; padding:0; line-height:1; }
   .zoom button:disabled{ opacity:.45; cursor:default; } .zoom button:not(:disabled):active{ transform:translate(2px,2px); box-shadow:1px 1px 0 var(--hot-pink); }
-  .pxmap.overview .mini-wrap, .pxmap.overview .map-label:not(.big):not(.forest):not(.sea):not(.shield), .pxmap.overview .map-label.s{ display:none; }
+  .pxmap.overview .mini-wrap, .pxmap.overview .map-label:not(.big):not(.forest):not(.sea):not(.shield):not(.reg), .pxmap.overview .map-label.s{ display:none; }
   .pxmap.overview .map-label.big{ font-size:11px; } .pxmap.overview .map-label.sea.big{ font-size:16px; }
   .map-label.shield{ display:none; }
   .pxmap.overview .map-label.shield{ display:block; background:#FF8A1F; color:#fff; border:2px solid #2B0B4F; border-radius:4px 4px 10px 10px; padding:4px 5px 3px; font-size:8px; text-shadow:1px 1px 0 #2B0B4F; z-index:3; }
+  .pxmap.overview .map-label:not(.reg){ display:none !important; }
+  .map-label.reg{ display:none; } .pxmap.overview .map-label.reg{ display:block; font-size:12px; }
+  .pxmap.overview .map-label.reg.sea{ font-size:16px; letter-spacing:.3em; }
+  .pxmap.overview .map-label.shield{ font-size:8px; }
+  .pxmap.overview .hud{ display:none; }
   .pxmap.overview .club-marker{ width:28px; height:28px; }
   .drag-hint{ left:50%; bottom:16px; transform:translateX(-50%); background:var(--hot-pink); color:#fff; border:3px solid #000; box-shadow: 3px 3px 0 #000; padding:9px 14px 8px; font-family:'Press Start 2P','Courier New',monospace;
     font-size:9px; letter-spacing:.06em; pointer-events:none; transition: opacity .5s, transform .5s; animation: hint-bob 1s steps(2) infinite alternate; white-space:nowrap; }
@@ -1031,7 +1036,7 @@
           </div>
         </div>
         <div class="map-controls">
-          <label class="map-toggle" for="showFac" style="margin-top:0"><input type="checkbox" id="showFac"><span class="box" aria-hidden="true"></span><canvas id="keyIcon" width="16" height="16" aria-hidden="true"></canvas><span class="lbl">Show Squash Facilities</span></label>
+          <label class="map-toggle" for="showFac" style="margin-top:0"><input type="checkbox" id="showFac"><span class="box" aria-hidden="true"></span><canvas id="keyIcon" width="16" height="16" aria-hidden="true"></canvas><span class="lbl">Show All Squash Facilities</span></label>
         </div>
       </div>
       <div>
@@ -1985,12 +1990,12 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   /* ============ VIEWPORT, CAMERA, RENDER ============ */
   const vp = document.getElementById('pxmap'), canvas = document.getElementById('mapCanvas'), cx = canvas.getContext('2d'), world = document.getElementById('world');
   const WPX = GW * TS, HPX = GH * TS;
-  let overview = false, zi = 1, Z = 3, vw = 400, vh = 240, camX = 0, camY = 0, frame = 0, dirty = true;
+  let overview = false, fitBox = null, prevView = null, zi = 1, Z = 3, vw = 400, vh = 240, camX = 0, camY = 0, frame = 0, dirty = true;
   const byRow = Array.from({ length: GH + 8 }, () => []);
   LMS.forEach(s => { byRow[Math.min(GH + 7, s.y)].push(s); }); BOATS.forEach(b => { byRow[b.y].push({ n: 'boat', x: b.x, y: b.y, ph: b.ph }); });
   function render(){
     const f = frame, ox = Math.round(camX), oy = Math.round(camY);
-    if (overview){ cx.clearRect(0, 0, canvas.width, canvas.height); cx.imageSmoothingEnabled = false; cx.drawImage(ovc, -camX * Z, -camY * Z, WPX * Z, HPX * Z);
+    if (overview){ cx.setTransform(1, 0, 0, 1, 0, 0); cx.clearRect(0, 0, canvas.width, canvas.height); cx.imageSmoothingEnabled = false; drawRegional();
       world.style.transform = 'translate3d(' + (-camX * Z) + 'px,' + (-camY * Z) + 'px,0)'; updateHud(); updateMini(); return; }
     cx.clearRect(0, 0, vw, vh);
     const tx0 = Math.max(0, Math.floor(ox / TS)), tx1 = Math.min(GW - 1, Math.floor((ox + vw) / TS)), ty0 = Math.max(0, Math.floor(oy / TS)), ty1 = Math.min(GH - 1, Math.floor((oy + vh) / TS));
@@ -2008,21 +2013,26 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
     world.style.transform = 'translate3d(' + (-ox * Z) + 'px,' + (-oy * Z) + 'px,0)';
     updateHud(); updateMini();
   }
-  function setCam(x, y){ camX = vw >= WPX ? (WPX - vw) / 2 : Math.max(0, Math.min(WPX - vw, x)); camY = vh >= HPX ? (HPX - vh) / 2 : Math.max(0, Math.min(HPX - vh, y)); dirty = true; }
+  function setCam(x, y){ if (fitBox){ camX = x; camY = y; dirty = true; return; } camX = vw >= WPX ? (WPX - vw) / 2 : Math.max(0, Math.min(WPX - vw, x)); camY = vh >= HPX ? (HPX - vh) / 2 : Math.max(0, Math.min(HPX - vh, y)); dirty = true; }
   function centerOn(lon, lat){ setCam(fx(lon) * TS - vw / 2, fy(lat) * TS - vh / 2); }
   const LEVELS = [3, 2, 1], mob = () => vp.getBoundingClientRect().width < 640;
   function resize(){
-    const r = vp.getBoundingClientRect(), lv = LEVELS[zi], fit = Math.min(r.width / WPX, r.height / HPX); overview = lv === 0;
-    Z = overview ? fit : (mob() && lv === 3 ? 2 : lv);
+    const r = vp.getBoundingClientRect(), lv = LEVELS[zi]; overview = !!fitBox;
+    Z = overview ? Math.min(r.width / fitBox.w, r.height / fitBox.h) : (mob() && lv === 3 ? 2 : lv);
     vw = Math.ceil(r.width / Z); vh = Math.ceil(r.height / Z);
     if (overview){ canvas.width = Math.round(r.width); canvas.height = Math.round(r.height); canvas.style.width = canvas.width + 'px'; canvas.style.height = canvas.height + 'px'; }
     else { canvas.width = vw; canvas.height = vh; canvas.style.width = vw * Z + 'px'; canvas.style.height = vh * Z + 'px'; }
     cx.imageSmoothingEnabled = false; vp.style.setProperty('--z', Z); vp.classList.toggle('overview', overview); setCam(camX, camY); dirty = true;
-    const zi_ = document.getElementById('zoomIn'), zo_ = document.getElementById('zoomOut'); if (zi_){ zi_.disabled = zi === 0; zo_.disabled = zi === LEVELS.length - 1; }
+    const zi_ = document.getElementById('zoomIn'), zo_ = document.getElementById('zoomOut'); if (zi_){ zi_.disabled = zi === 0 && !overview; zo_.disabled = zi === LEVELS.length - 1; }
   }
-  function zoomTo(n){ n = Math.max(0, Math.min(LEVELS.length - 1, n)); if (n === zi) return; stopMotion();
+  function leaveFit(){ if (!fitBox) return; fitBox = null; zi = prevView ? prevView.zi : 1; resize(); if (prevView) setCam(prevView.x, prevView.y); prevView = null; }
+  function enterFit(){ const pts = clubs; if (!pts.length) return; stopMotion();
+    let x0 = 1e9, x1 = -1e9, y0 = 1e9, y1 = -1e9; pts.forEach(c => { const X = fx(c.lng) * TS, Y = fy(c.lat) * TS; x0 = Math.min(x0, X); x1 = Math.max(x1, X); y0 = Math.min(y0, Y); y1 = Math.max(y1, Y); });
+    const padX = Math.max(70, (x1 - x0) * .08), padY = Math.max(70, (y1 - y0) * .10); if (!fitBox) prevView = { zi, x: camX, y: camY };
+    fitBox = { w: x1 - x0 + padX * 2, h: y1 - y0 + padY * 2 }; resize(); setCam((x0 + x1) / 2 - vw / 2, (y0 + y1) / 2 - vh / 2); if (hint) hint.classList.add('gone'); }
+  function zoomTo(n){ if (fitBox){ leaveFit(); return; } n = Math.max(0, Math.min(LEVELS.length - 1, n)); if (n === zi) return; stopMotion();
     const lon0 = lonAt((camX + vw / 2) / TS), lat0 = latAt((camY + vh / 2) / TS); const cxw = camX + vw / 2, cyw = camY + vh / 2; zi = n; resize();
-    if (overview) setCam(0, 0); else setCam(cxw - vw / 2, cyw - vh / 2); if (hint) hint.classList.add('gone'); }
+    setCam(cxw - vw / 2, cyw - vh / 2); if (hint) hint.classList.add('gone'); }
   document.addEventListener('click', e => { if (e.target.closest('#zoomIn')) zoomTo(zi - 1); else if (e.target.closest('#zoomOut')) zoomTo(zi + 1); });
   vp.addEventListener('wheel', e => { e.preventDefault(); if (zwheel) return; zwheel = true; setTimeout(() => zwheel = false, 220); zoomTo(zi + (e.deltaY > 0 ? 1 : -1)); }, { passive: false });
   let zwheel = false;
@@ -2037,17 +2047,17 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   function stopMotion(){ cancelAnimationFrame(inertia); cancelAnimationFrame(anim); }
   vp.addEventListener('pointerdown', e => { if (e.button > 0 || e.target.closest('.map-ui')) return; stopMotion();
     drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, cx: camX, cy: camY, lx: e.clientX, ly: e.clientY, lt: performance.now(), on: false }; vel = { x: 0, y: 0 }; });
-  vp.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id) return; const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
+  vp.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id || fitBox) return; const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
     if (!drag.on && Math.hypot(dx, dy) > 4){ drag.on = true; try { vp.setPointerCapture(drag.id); } catch (_) {} vp.classList.add('dragging'); if (hint) hint.classList.add('gone'); }
     if (!drag.on) return; const now = performance.now(), dt = Math.max(1, now - drag.lt);
     vel = { x: (drag.lx - e.clientX) / Z / dt * 16, y: (drag.ly - e.clientY) / Z / dt * 16 }; drag.lx = e.clientX; drag.ly = e.clientY; drag.lt = now;
     setCam(drag.cx - dx / Z, drag.cy - dy / Z); });
   function endDrag(e){ if (!drag || (e && e.pointerId !== drag.id)) return; const was = drag.on;
-    if (!was && overview && e && e.type === 'pointerup' && !e.target.closest('.club-marker')){ const r = vp.getBoundingClientRect(); const wx = (e.clientX - r.left) / Z + camX, wy = (e.clientY - r.top) / Z + camY; drag = null; zi = 1; resize(); setCam(wx - vw / 2, wy - vh / 2); return; } drag = null; vp.classList.remove('dragging');
+    if (!was && overview && e && e.type === 'pointerup' && !e.target.closest('.club-marker')){ const r = vp.getBoundingClientRect(); const wx = (e.clientX - r.left) / Z + camX, wy = (e.clientY - r.top) / Z + camY; drag = null; fitBox = null; prevView = null; zi = 1; resize(); setCam(wx - vw / 2, wy - vh / 2); return; } drag = null; vp.classList.remove('dragging');
     if (was && !reduce){ const step = () => { vel.x *= .93; vel.y *= .93; if (Math.hypot(vel.x, vel.y) < .2) return; setCam(camX + vel.x, camY + vel.y); inertia = requestAnimationFrame(step); }; inertia = requestAnimationFrame(step); } }
   vp.addEventListener('pointerup', endDrag); vp.addEventListener('pointercancel', endDrag);
   vp.addEventListener('keydown', e => { if (e.key === '+' || e.key === '=') return zoomTo(zi - 1); if (e.key === '-') return zoomTo(zi + 1); const k = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] }[e.key]; if (!k) return; e.preventDefault(); stopMotion(); const s = e.shiftKey ? 220 : 64; setCam(camX + k[0] * s, camY + k[1] * s); if (hint) hint.classList.add('gone'); });
-  function panTo(lon, lat, ms){ stopMotion(); if (overview){ zi = 1; resize(); } const tx = Math.max(0, Math.min(WPX - vw, fx(lon) * TS - vw / 2)), ty = Math.max(0, Math.min(HPX - vh, fy(lat) * TS - vh / 2));
+  function panTo(lon, lat, ms){ stopMotion(); if (overview){ fitBox = null; prevView = null; zi = 1; resize(); } const tx = Math.max(0, Math.min(WPX - vw, fx(lon) * TS - vw / 2)), ty = Math.max(0, Math.min(HPX - vh, fy(lat) * TS - vh / 2));
     if (reduce){ setCam(tx, ty); return; } const sx = camX, sy = camY, t0 = performance.now(), dur = ms || Math.min(1400, 350 + Math.hypot(tx - sx, ty - sy) * .35);
     const step = (t) => { const k = Math.min(1, (t - t0) / dur), e = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2; setCam(sx + (tx - sx) * e, sy + (ty - sy) * e); if (k < 1) anim = requestAnimationFrame(step); }; anim = requestAnimationFrame(step); }
 
@@ -2087,6 +2097,33 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   mini.addEventListener('pointerdown', e => { miniDrag = true; try { mini.setPointerCapture(e.pointerId); } catch (_) {} miniGo(e); });
   mini.addEventListener('pointermove', e => { if (miniDrag) miniGo(e); }); mini.addEventListener('pointerup', () => { miniDrag = false; });
 
+
+  /* ============ REGIONAL VIEW (Santa Barbara to San Diego): flat green land, blue ocean, sand beaches, orange interstates ============ */
+  const REG_COAST = [[-120.70,34.50],[-120.30,34.47],[-120.05,34.462],[-119.95,34.407],[-119.88,34.405],[-119.69,34.405],[-119.52,34.388],[-119.40,34.33],[-119.29,34.27],[-119.22,34.15],[-119.12,34.12],[-119.06,34.09],[-118.95,34.04],[-118.80,34.03],[-118.81,34.00],[-118.70,34.03],
+    [-118.58,34.04],[-118.50,34.012],[-118.463,33.97],[-118.44,33.93],[-118.41,33.885],[-118.39,33.84],[-118.42,33.80],[-118.41,33.745],[-118.36,33.735],[-118.30,33.713],[-118.25,33.72],[-118.20,33.735],[-118.15,33.755],[-118.10,33.74],[-118.03,33.69],[-118.00,33.655],
+    [-117.92,33.605],[-117.85,33.575],[-117.78,33.535],[-117.71,33.47],[-117.62,33.415],[-117.50,33.30],[-117.39,33.19],[-117.35,33.14],[-117.30,33.04],[-117.27,32.96],[-117.28,32.86],[-117.25,32.80],[-117.24,32.69],[-117.21,32.67],[-117.15,32.60],[-117.12,32.535]];
+  const REG_LAND = REG_COAST.concat([[-116.4,32.535],[-116.4,35.2],[-120.7,35.2]]);
+  const REG_ROADS = [
+    ['5',[[-117.17,32.72],[-117.21,32.80],[-117.25,32.90],[-117.31,33.05],[-117.37,33.18],[-117.52,33.38],[-117.67,33.50],[-117.78,33.60],[-117.86,33.69],[-117.98,33.85],[-118.10,33.93],[-118.17,34.01],[-118.23,34.06],[-118.28,34.12],[-118.34,34.21],[-118.47,34.30],[-118.60,34.45]]],
+    ['405',[[-117.74,33.64],[-117.88,33.68],[-118.00,33.76],[-118.12,33.82],[-118.25,33.85],[-118.34,33.89],[-118.41,33.97],[-118.45,34.03],[-118.47,34.14],[-118.47,34.25]]],
+    ['101',[[-119.70,34.42],[-119.55,34.40],[-119.40,34.33],[-119.30,34.28],[-119.18,34.20],[-119.00,34.16],[-118.80,34.15],[-118.60,34.15],[-118.40,34.14],[-118.30,34.09],[-118.25,34.06]]],
+    ['10',[[-118.49,34.01],[-118.30,34.04],[-118.20,34.04],[-118.00,34.08],[-117.80,34.09],[-117.60,34.07],[-117.30,34.06]]],
+    ['15',[[-117.16,32.75],[-117.12,32.90],[-117.14,33.05],[-117.17,33.22],[-117.30,33.45],[-117.40,33.62]]],
+    ['8',[[-117.25,32.75],[-117.05,32.78],[-116.80,32.78]]] ];
+  const REG_CITIES = [['SANTA BARBARA',-119.45,34.45],['VENTURA',-119.22,34.30],['LOS ANGELES',-117.98,34.26],['LONG BEACH',-118.15,33.70],['IRVINE',-117.55,33.74],['OCEANSIDE',-117.34,33.255],['SAN DIEGO',-117.10,33.07],['PACIFIC OCEAN',-119.0,33.60]];
+  const rb = (lon, lat) => [fx(lon) * TS, fy(lat) * TS];
+  const regPath = (ctx, pts) => { ctx.beginPath(); pts.forEach((q, k) => { const w = rb(q[0], q[1]); k ? ctx.lineTo(w[0], w[1]) : ctx.moveTo(w[0], w[1]); }); };
+  function drawRegional(){
+    cx.setTransform(1, 0, 0, 1, 0, 0); cx.fillStyle = P.w2; cx.fillRect(0, 0, canvas.width, canvas.height);
+    cx.setTransform(Z, 0, 0, Z, -camX * Z, -camY * Z); cx.lineJoin = 'round'; cx.lineCap = 'round';
+    regPath(cx, REG_LAND); cx.closePath(); cx.fillStyle = '#8FCF6B'; cx.fill();
+    cx.save(); regPath(cx, REG_LAND); cx.closePath(); cx.clip(); regPath(cx, REG_COAST); cx.lineWidth = 16 / Z; cx.strokeStyle = P.sand1; cx.stroke(); regPath(cx, REG_COAST); cx.lineWidth = 8 / Z; cx.strokeStyle = P.sand2; cx.stroke(); cx.restore();
+    regPath(cx, REG_COAST); cx.lineWidth = 2.5 / Z; cx.strokeStyle = '#FFFFFF'; cx.stroke();
+    REG_ROADS.forEach(r => { regPath(cx, r[1]); cx.lineWidth = 6 / Z; cx.strokeStyle = '#2B0B4F'; cx.stroke(); }); REG_ROADS.forEach(r => { regPath(cx, r[1]); cx.lineWidth = 3.4 / Z; cx.strokeStyle = '#FF8A1F'; cx.stroke(); });
+    cx.setTransform(1, 0, 0, 1, 0, 0); }
+  REG_CITIES.forEach(c => { const e = el_('div', 'map-label reg' + (c[0] === 'PACIFIC OCEAN' ? ' sea' : ''), c[0]); const w = rb(c[1], c[2]); e.style.setProperty('--x', w[0]); e.style.setProperty('--y', w[1]); world.appendChild(e); });
+  REG_ROADS.forEach(r => { const mid = r[1][Math.floor(r[1].length / 2)], w = rb(mid[0], mid[1]); const e = el_('div', 'map-label shield reg', r[0]); e.style.setProperty('--x', w[0]); e.style.setProperty('--y', w[1]); world.appendChild(e); });
+
   /* ============ JUMP MENU ============ */
   const jump = document.getElementById('jumpSel');
   if (jump){ const ph = el_('option', null, 'Jump to a neighborhood…'); ph.value = ''; jump.append(ph);
@@ -2106,7 +2143,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   /* ============ FACILITIES ============ */
   const showFac = document.getElementById('showFac');
   function setMarkers(on){ vp.classList.toggle('hide-markers', !on); if (showFac) showFac.checked = on; }
-  if (showFac) showFac.addEventListener('change', () => setMarkers(showFac.checked));
+  if (showFac) showFac.addEventListener('change', () => { setMarkers(showFac.checked); if (showFac.checked) enterFit(); else leaveFit(); });
   const onMap = (c) => c.lat >= LAT0 && c.lat <= LAT1 && c.lng >= LON0 && c.lng <= LON1;
   const details = (c) => { const base = PROS[c.contact] || {}; const info = Object.assign({}, base, (base.clubs && base.clubs[c.name]) || {});
     return { name: c.contact, role: info.role || 'Squash pro', phone: info.phone || null, email: info.email || null }; };
@@ -2121,18 +2158,17 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
     dl.append(row(d.role === 'Club phone' ? 'Contact' : 'Pro', el_('span', null, d.role === 'Club phone' ? 'Front desk / club line' : (d.name || 'Not listed'))));
     dl.append(row('Phone', d.phone ? link(d.phone, 'tel:' + d.phone.replace(/[^\d+]/g, '')) : none()));
     dl.append(row('Email', d.email ? link(d.email, 'mailto:' + d.email) : none())); card.append(dl);
-    if (!onMap(c)) card.append(el_('div', 'offmap', 'This club is outside the Greater LA map area. Use directions to find it.'));
-    const dir = link('GET DIRECTIONS', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(c.name + ', ' + c.addr)); dir.className = 'btn-dir'; dir.target = '_blank'; dir.rel = 'noopener'; card.append(dir);
+        const dir = link('GET DIRECTIONS', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(c.name + ', ' + c.addr)); dir.className = 'btn-dir'; dir.target = '_blank'; dir.rel = 'noopener'; card.append(dir);
     markers.forEach(m => { const on = m.c === c; if (m.btn) m.btn.classList.toggle('active', on); m.li.classList.toggle('active', on); });
-    if (how === 'list' && onMap(c)){ setMarkers(true); panTo(c.lng, c.lat); }
+    if (how === 'list'){ setMarkers(true); if (onMap(c)) panTo(c.lng, c.lat); else enterFit(); }
     if (how !== 'marker' && window.innerWidth <= 960) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   clubs.forEach(c => {
     const m = { c, btn: null, li: null };
-    if (onMap(c)){ const btn = el_('button', 'club-marker'); btn.type = 'button'; btn.style.setProperty('--x', fx(c.lng) * TS); btn.style.setProperty('--y', fy(c.lat) * TS);
+    { const btn = el_('button', 'club-marker'); btn.type = 'button'; btn.style.setProperty('--x', fx(c.lng) * TS); btn.style.setProperty('--y', fy(c.lat) * TS);
       btn.setAttribute('aria-label', c.name + ', ' + c.addr); btn.title = c.name; btn.append(iconCanvas()); world.append(btn); btn.addEventListener('click', () => select(c, 'marker')); m.btn = btn; }
     const li = el_('li'), lb = el_('button'); lb.type = 'button'; lb.append(iconCanvas());
-    const wrap = el_('div'); wrap.append(el_('div', 'nm', c.name)); wrap.append(el_('div', 'ad', c.addr + (onMap(c) ? '' : ' · off map'))); lb.append(wrap); li.append(lb); list.append(li);
+    const wrap = el_('div'); wrap.append(el_('div', 'nm', c.name)); wrap.append(el_('div', 'ad', c.addr)); lb.append(wrap); li.append(lb); list.append(li);
     m.li = lb; markers.push(m); lb.addEventListener('click', () => select(c, 'list')); });
 
   /* ============ HOME ADDRESS -> squash ball pin ============ */
@@ -2211,7 +2247,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
       if (sg && Math.abs(sg.b[0] - sg.a[0]) > 0.5) dir = sg.b[0] > sg.a[0] ? 1 : -1; draw(Math.floor(t / 90) & 1, dir); place(X, Y);
       if (t >= t0) setCam(X - vw / 2, Y - vh / 2);
       if (dist < total) carAnim = requestAnimationFrame(step); else { draw(0, dir); setMarkers(true); select(c, 'marker'); showPop(c); say('Arrived: ' + c.name + '.'); } };
-    if (overview){ zi = 1; resize(); } carAnim = requestAnimationFrame(step); }
+    if (overview){ fitBox = null; prevView = null; zi = 1; resize(); } carAnim = requestAnimationFrame(step); }
 
   /* ============ GO ============ */
   new ResizeObserver(resize).observe(vp);
