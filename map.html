@@ -2342,7 +2342,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   function frameClubs(){ setMarkers(true); zi = LEVELS.length - 1; resize(); const b = clubBox(); if (b) setCam((b.x0 + b.x1) / 2 - vw / 2, (b.y0 + b.y1) / 2 - vh / 2); }
   let zOv = false;
   function nearestRegion(lon, lat){ let best = null, bd = 1e9; Object.keys(REGIONS).forEach(k => { const r = REGIONS[k], dx = Math.max(r.LON0 - lon, 0, lon - r.LON1) * Math.cos(lat * Math.PI / 180), dy = Math.max(r.LAT0 - lat, 0, lat - r.LAT1), d = Math.hypot(dx, dy) + Math.hypot((r.LON0 + r.LON1) / 2 - lon, (r.LAT0 + r.LAT1) / 2 - lat) * 1e-3; if (d < bd){ bd = d; best = k; } }); return best; }
-  function zoomFromOverview(px, py){ if (zOv || !fitBox) return; const r = vp.getBoundingClientRect(); if (px == null){ px = r.left + r.width / 2; py = r.top + r.height / 2; }
+  function zoomFromOverview(px, py){ if (zOv || !fitBox) return; if (trip){ leaveFit(); return; } const r = vp.getBoundingClientRect(); if (px == null){ px = r.left + r.width / 2; py = r.top + r.height / 2; }
     const wx = (px - r.left) / Z + camX, wy = (py - r.top) / Z + camY, lon = lonAt(wx / TS), lat = latAt(wy / TS), k = nearestRegion(lon, lat); zOv = true;
     goRegion(k).then(() => { frameClubs(); zOv = false; }); }
   const ldEl = document.getElementById('mapLoading');
@@ -2372,7 +2372,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
         else { const lat = parseFloat(j[0].lat), lon = parseFloat(j[0].lon);
           const rk = regionOf(lat, lon);
           if (!rk){ clearHome(); say('That address is outside the areas mapped here (Los Angeles, Orange, San Diego and Santa Barbara counties).', true); }
-          else { await goRegion(rk); placeHome(lat, lon); const ord = orderClubs(lat, lon); trip = ord.length ? { lat, lon, order: ord, idx: 0, cur: null } : null; say(trip ? 'Found it! Here comes your ride to the nearest squash club…' : 'Found it! Your home is marked with a squash ball.'); if (trip) goClub(); } }
+          else { await goRegion(rk); if (zi !== 1){ zi = 1; resize(); } placeHome(lat, lon); const ord = orderClubs(lat, lon); trip = ord.length ? { lat, lon, order: ord, idx: 0, cur: null } : null; say(trip ? 'Found it! Here comes your ride to the nearest squash club…' : 'Found it! Your home is marked with a squash ball.'); if (trip) goClub(); } }
       } catch (err){ say('Sorry, the address lookup isn’t available right now. Please try again in a moment.', true); }
       addrGo.disabled = false; });
     addrClear.addEventListener('click', () => { clearHome(); addrIn.value = ''; say(defMsg); }); }
@@ -2427,7 +2427,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
       let sg = segs[segs.length - 1]; for (const q of segs) if (dist <= q.s + q.L){ sg = q; break; }
       const k = sg ? (dist - sg.s) / sg.L : 1, X = sg ? sg.a[0] + (sg.b[0] - sg.a[0]) * k : S[0] * TS, Y = sg ? sg.a[1] + (sg.b[1] - sg.a[1]) * k : S[1] * TS;
       if (sg && Math.abs(sg.b[0] - sg.a[0]) > 0.5) dir = sg.b[0] > sg.a[0] ? 1 : -1; draw(Math.floor(t / 90) & 1, dir); place(X, Y);
-      if (t >= t0) setCam(X - vw / 2, Y - vh / 2);
+      if (t >= t0 && !fitBox) setCam(X - vw / 2, Y - vh / 2);
       if (dist < total) carAnim = requestAnimationFrame(step); else { draw(0, dir); setMarkers(true); select(c, 'marker'); showPop(c); say('Arrived: ' + c.name + '.'); } };
     if (overview){ fitBox = null; prevView = null; zi = 0; resize(); } carAnim = requestAnimationFrame(step); }
 
