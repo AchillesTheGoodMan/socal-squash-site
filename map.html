@@ -932,6 +932,14 @@
   .club-pop .eta{ color:var(--court-blue); }
   @keyframes pop-in{ 0%{ transform:translateY(16px); opacity:0 } 100%{ transform:none; opacity:1 } }
   @media (max-width: 640px){ .club-pop{ bottom:46px; } }
+  .pxmap-frame{ position:relative; }
+  .plane{ position:absolute; left:calc(var(--x) * var(--z) * 1px); top:calc(var(--y) * var(--z) * 1px); width:51px; height:45px; transform:translate(-50%,-50%) rotate(var(--r,0deg)); z-index:10; pointer-events:none; }
+  .plane canvas{ width:100%; height:100%; image-rendering:pixelated; display:block; filter: drop-shadow(0 0 0 #fff) drop-shadow(5px 7px 0 rgba(20,5,43,.4)); animation: pl-bob .5s steps(2) infinite alternate; }
+  @keyframes pl-bob{ to{ transform: translateY(-3px); } }
+  .plane-bubble{ position:absolute; z-index:30; width:80px; height:80px; margin:-40px 0 0 -40px; border-radius:50%; background:#FFF0D1; border:4px solid #000; box-shadow:4px 4px 0 #000; display:flex; align-items:center; justify-content:center; pointer-events:none; animation:pb-bob .5s steps(2) infinite alternate; transition:opacity .25s; }
+  .plane-bubble.out{ opacity:0; }
+  .plane-bubble canvas{ width:51px; height:45px; image-rendering:pixelated; transform:rotate(var(--r,0deg)); }
+  @keyframes pb-bob{ to{ translate:0 -5px; } }
   .car{ position:absolute; left:calc(var(--x) * var(--z) * 1px); top:calc(var(--y) * var(--z) * 1px); width:calc(var(--z) * 20px); height:calc(var(--z) * 12px); transform:translate(-50%,-72%); z-index:9; pointer-events:none; }
   .car canvas{ width:100%; height:100%; image-rendering:pixelated; display:block; transform:scaleX(var(--f,1)); animation: car-pop .5s steps(5); filter: drop-shadow(0 3px 0 rgba(20,5,43,.55)); }
   @keyframes car-pop{ 0%{ transform:scale(0) scaleX(var(--f,1)) } 60%{ transform:scale(1.5) scaleX(var(--f,1)) } 100%{ transform:scale(1) scaleX(var(--f,1)) } }
@@ -2138,7 +2146,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   /* ============ VIEWPORT, CAMERA, RENDER ============ */
   const vp = document.getElementById('pxmap'), canvas = document.getElementById('mapCanvas'), cx = canvas.getContext('2d'), world = document.getElementById('world');
   let WPX = GW * TS, HPX = GH * TS;
-  let overview = false, fitBox = null, prevView = null, zi = 0, Z = 3, vw = 400, vh = 240, camX = 0, camY = 0, frame = 0, dirty = true;
+  let overview = false, fitBox = null, prevView = null, zi = 0, zAnim = null, flying = false, Z = 3, vw = 400, vh = 240, camX = 0, camY = 0, frame = 0, dirty = true;
   function drawFw(ox, oy){ if (zi !== LEVELS.length - 1 || !RG || !RG.FREEWAYS) return; cx.save(); cx.setTransform(lowres ? Z : 1, 0, 0, lowres ? Z : 1, lowres ? -ox * Z : -ox, lowres ? -oy * Z : -oy); cx.lineJoin = 'round'; cx.lineCap = 'round';
     if (RG.HWYS){ [['#7a3300', 4.2], ['#FFB547', 2.2]].forEach(st => { cx.strokeStyle = st[0]; cx.lineWidth = st[1] / Z; RG.HWYS.forEach(f => { cx.beginPath(); f.forEach((q, i) => { const X = fx(q[0]) * TS, Y = fy(q[1]) * TS; if (i) cx.lineTo(X, Y); else cx.moveTo(X, Y); }); cx.stroke(); }); }); }
     [['#8a3a00', 6], ['#FF8A1F', 3.4]].forEach(st => { cx.strokeStyle = st[0]; cx.lineWidth = st[1] / Z; RG.FREEWAYS.forEach(f => { cx.beginPath(); f.forEach((q, i) => { const X = fx(q[0]) * TS, Y = fy(q[1]) * TS; if (i) cx.lineTo(X, Y); else cx.moveTo(X, Y); }); cx.stroke(); }); }); cx.restore(); }
@@ -2183,7 +2191,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
       for (let i = 0; i < f.length - 1; i++){ const ax = fx(f[i][0]) * TS, ay = fy(f[i][1]) * TS, bx = fx(f[i + 1][0]) * TS, by = fy(f[i + 1][1]) * TS, n = Math.max(1, Math.ceil(Math.hypot(bx - ax, by - ay) * Z / 18));
         for (let k = 0; k <= n; k++){ const t = k / n, X = ax + (bx - ax) * t, Y = ay + (by - ay) * t; if (X < x0 || X > x1 || Y < y0 || Y > y1) continue; let d = 170; placed.forEach(q => { d = Math.min(d, Math.hypot(q[0] - X, q[1] - Y) * Z); }); const sc = d - Math.hypot(X - cxm, Y - cym) * Z * 0.02; if (sc > bs){ bs = sc; best = [X, Y]; } } }
       if (!best) return; placed.push(best); const e = el_('div', 'map-label shield lowfw ' + sd[3], sd[2]); e.style.setProperty('--x', best[0]); e.style.setProperty('--y', best[1]); world.appendChild(e); }); }
-  function layout(){ placeShields(); declutter(); }
+  function layout(){ if (flying) return; placeShields(); declutter(); }
   function declutter(){ const els = Array.from(world.querySelectorAll('.map-label:not(.reg):not(.shield)')); els.forEach(e => e.classList.remove('cull')); if (zi !== LEVELS.length - 1 || overview) return;
     const rank = e => { const t = e.textContent.toLowerCase(); const i = PRI.findIndex(n => t.indexOf(n) >= 0); return i < 0 ? 999 : i; };
     const items = els.map((e, k) => ({ e, k, r: rank(e), b: e.getBoundingClientRect() })).sort((a, b) => a.r - b.r || a.k - b.k), kept = Array.from(world.querySelectorAll('.club-marker')).map(m => m.getBoundingClientRect()).concat(Array.from(world.querySelectorAll('.lowfw')).map(m => m.getBoundingClientRect()));
@@ -2199,9 +2207,9 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
     mc.putImageData(img, 0, 0); miniCache[curKey] = m; return m; }
   function resize(){
     const r = vp.getBoundingClientRect(); overview = !!fitBox; if (!overview && curKey && zi === LEVELS.length - 1) LEVELS[LEVELS.length - 1] = regionFitZ(); const lv = LEVELS[zi];
-    Z = overview ? Math.min(r.width / fitBox.w, r.height / fitBox.h) : (mob() && lv === 3 ? 2 : lv); lowres = !overview && Z < 0.5;
+    Z = overview ? Math.min(r.width / fitBox.w, r.height / fitBox.h) : (zAnim != null ? zAnim : (mob() && lv === 3 ? 2 : lv)); lowres = !overview && Z < 0.5;
     vw = Math.ceil(r.width / Z); vh = Math.ceil(r.height / Z);
-    if (overview || lowres){ canvas.width = Math.round(r.width); canvas.height = Math.round(r.height); canvas.style.width = canvas.width + 'px'; canvas.style.height = canvas.height + 'px'; }
+    if (overview || lowres){ if (canvas.width !== Math.round(r.width)) canvas.width = Math.round(r.width); if (canvas.height !== Math.round(r.height)) canvas.height = Math.round(r.height); canvas.style.width = canvas.width + 'px'; canvas.style.height = canvas.height + 'px'; }
     else { canvas.width = vw; canvas.height = vh; canvas.style.width = vw * Z + 'px'; canvas.style.height = vh * Z + 'px'; }
     cx.imageSmoothingEnabled = false; vp.style.setProperty('--z', Z); vp.classList.toggle('overview', overview); vp.classList.toggle('lowres', lowres); vp.classList.toggle('widest', !overview && zi === LEVELS.length - 1); setCam(camX, camY); dirty = true; requestAnimationFrame(layout);
     const zi_ = document.getElementById('zoomIn'), zo_ = document.getElementById('zoomOut'); if (zi_){ zi_.disabled = zi === 0 && !overview; zo_.disabled = overview; }
@@ -2212,7 +2220,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
     let x0 = fx(ML - .3) * TS, x1 = fx(Math.max(MR + .3, -117.0)) * TS, y0 = fy(MT + .3) * TS, y1 = fy(32.47) * TS;
     const padX = (x1 - x0) * .03, padY = (y1 - y0) * .03; if (!fitBox) prevView = { zi, x: camX, y: camY };
     fitBox = { w: x1 - x0 + padX * 2, h: y1 - y0 + padY * 2 }; resize(); setCam((x0 + x1) / 2 - vw / 2, (y0 + y1) / 2 - vh / 2); if (hint) hint.classList.add('gone'); }
-  function zoomTo(n, px, py){ if (fitBox){ if (n < zi + 1) zoomFromOverview(px, py); return; } if (n > LEVELS.length - 1){ setMarkers(true); enterFit(); return; } n = Math.max(0, Math.min(LEVELS.length - 1, n)); if (n === zi) return; stopMotion();
+  function zoomTo(n, px, py){ if (flying) return; if (fitBox){ if (n < zi + 1) zoomFromOverview(px, py); return; } if (n > LEVELS.length - 1){ setMarkers(true); enterFit(); return; } n = Math.max(0, Math.min(LEVELS.length - 1, n)); if (n === zi) return; stopMotion();
     const lon0 = lonAt((camX + vw / 2) / TS), lat0 = latAt((camY + vh / 2) / TS); let cxw = camX + vw / 2, cyw = camY + vh / 2;
     if (px != null && n < zi){ const r = vp.getBoundingClientRect(), wx = (px - r.left) / Z + camX, wy = (py - r.top) / Z + camY; let bd = 1e18; clubsHere().forEach(c => { const X = fx(c.lng) * TS, Y = fy(c.lat) * TS, d = (X - wx) * (X - wx) + (Y - wy) * (Y - wy); if (d < bd){ bd = d; cxw = X; cyw = Y; } }); }
     zi = n; resize();
@@ -2229,7 +2237,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   let drag = null, vel = { x: 0, y: 0 }, inertia = 0, anim = 0;
   const hint = document.getElementById('dragHint');
   function stopMotion(){ cancelAnimationFrame(inertia); cancelAnimationFrame(anim); }
-  vp.addEventListener('pointerdown', e => { if (e.button > 0 || e.target.closest('.map-ui')) return; stopMotion();
+  vp.addEventListener('pointerdown', e => { if (flying || e.button > 0 || e.target.closest('.map-ui')) return; stopMotion();
     drag = { id: e.pointerId, sx: e.clientX, sy: e.clientY, cx: camX, cy: camY, lx: e.clientX, ly: e.clientY, lt: performance.now(), on: false }; vel = { x: 0, y: 0 }; });
   vp.addEventListener('pointermove', e => { if (!drag || e.pointerId !== drag.id || fitBox) return; const dx = e.clientX - drag.sx, dy = e.clientY - drag.sy;
     if (!drag.on && Math.hypot(dx, dy) > 4){ drag.on = true; try { vp.setPointerCapture(drag.id); } catch (_) {} vp.classList.add('dragging'); if (hint) hint.classList.add('gone'); }
@@ -2346,7 +2354,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
     const wx = (px - r.left) / Z + camX, wy = (py - r.top) / Z + camY, lon = lonAt(wx / TS), lat = latAt(wy / TS), k = nearestRegion(lon, lat); zOv = true;
     goRegion(k).then(() => { frameClubs(); zOv = false; }); }
   const ldEl = document.getElementById('mapLoading');
-  function goRegion(key){ return new Promise(res => { if (key === curKey && !fitBox){ res(); return; } if (key === curKey){ leaveFit(); res(); return; }
+  function goRegion(key){ stopFlight(); return new Promise(res => { if (key === curKey && !fitBox){ res(); return; } if (key === curKey){ leaveFit(); res(); return; }
     ldEl.classList.remove('gone'); setTimeout(() => { switchRegion(key); ldEl.classList.add('gone'); res(); }, 50); }); }
   document.querySelectorAll('#regTabs button').forEach(b => b.addEventListener('click', () => { if (showFac && showFac.checked){ setMarkers(false); } goRegion(b.dataset.r).then(frameClubs); }));
   function enterCounty(c){ const rk = regionOf(c.lat, c.lng); if (!rk) return; select(c, 'marker'); setMarkers(true); stopCar(); goRegion(rk).then(() => { if (zi > 0){ zi = 0; resize(); } panTo(c.lng, c.lat); }); }
@@ -2371,7 +2379,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
         if (!j.length){ clearHome(); say('We couldn’t find that address. Try adding the city and ZIP code.', true); }
         else { const lat = parseFloat(j[0].lat), lon = parseFloat(j[0].lon);
           const rk = regionOf(lat, lon);
-          if (!rk){ clearHome(); say('That address is outside the areas mapped here (Los Angeles, Orange, San Diego and Santa Barbara counties).', true); }
+          if (!rk){ clearHome(); await flyIn(lat, lon); }
           else { await goRegion(rk); if (zi !== 1){ zi = 1; resize(); } placeHome(lat, lon); const ord = orderClubs(lat, lon); trip = ord.length ? { lat, lon, order: ord, idx: 0, cur: null } : null; say(trip ? 'Found it! Here comes your ride to the nearest squash club…' : 'Found it! Your home is marked with a squash ball.'); if (trip) goClub(); } }
       } catch (err){ say('Sorry, the address lookup isn’t available right now. Please try again in a moment.', true); }
       addrGo.disabled = false; });
@@ -2394,10 +2402,10 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
     let out; try { const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 6000);
       const r = await fetch('https://router.project-osrm.org/route/v1/driving/' + lon + ',' + lat + ';' + c.lng + ',' + c.lat + '?overview=false', { signal: ctl.signal }); clearTimeout(to);
       const j = await r.json(); if (j.code === 'Ok' && j.routes && j.routes[0]) out = { min: j.routes[0].duration / 60, mi: j.routes[0].distance / 1609.34, est: false }; } catch (_) {}
-    if (!out){ const km = hav(lat, lon, c.lat, c.lng) * 1.35; out = { min: km / 40 * 60 + 2, mi: km / 1.609, est: true }; }
+    if (!out){ const km = hav(lat, lon, c.lat, c.lng) * 1.35; const spd = km < 30 ? 40 : km < 150 ? 65 : 85; out = { min: km / spd * 60 + 2, mi: km / 1.609, est: true }; }
     etaCache[key] = out; return out; }
   function hidePop(){ pop.hidden = true; pop.replaceChildren(); }
-  function stopCar(){ cancelAnimationFrame(carAnim); clearInterval(carTimer); if (carEl){ carEl.remove(); carEl = null; } hidePop(); }
+  function stopCar(){ stopFlight(); cancelAnimationFrame(carAnim); clearInterval(carTimer); if (carEl){ carEl.remove(); carEl = null; } hidePop(); }
   function showPop(c){ const d = details(c); pop.replaceChildren();
     const x = el_('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', hidePop);
     const rank = trip ? trip.idx + 1 : 1, tot = trip ? trip.order.length : 1;
@@ -2412,7 +2420,11 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
       pop.append(el_('div', 'note', 'Typical drive from your address, without traffic.'));
       if (tot > 1){ const nb = el_('button', 'next', rank < tot ? 'NEXT CLOSEST CLUB ▶' : '◀ BACK TO CLOSEST CLUB'); nb.type = 'button'; nb.addEventListener('click', () => { trip.idx = (trip.idx + 1) % tot; goClub(); }); pop.append(nb); } }
     pop.hidden = false; }
-  function goClub(){ const c = trip.order[trip.idx].c; trip.cur = c; hidePop(); say((trip.idx === 0 ? 'Heading to the closest club: ' : 'Next closest: ') + c.name + '…'); driveTo(trip.lat, trip.lon, c); getEta(trip.lat, trip.lon, c); }
+  async function goClub(){ let c = trip.order[trip.idx].c; trip.cur = c; hidePop(); say((trip.idx === 0 ? 'Heading to the closest club: ' : 'Next closest: ') + c.name + '…');
+    let st = [trip.lat, trip.lon];
+    if (trip.outside){ const t = trip, rk = regionOf(c.lat, c.lng); if (rk && rk !== curKey){ await goRegion(rk); trip = t; trip.cur = c; zi = 1; resize(); }
+      const L = landFor(c, trip.lat, trip.lon); st = [latAt(L[1] / TS), lonAt(L[0] / TS)]; }
+    getEta(trip.lat, trip.lon, c); driveTo(st[0], st[1], c); }
   function driveTo(lat, lon, c){
     stopCar(); const S = [fx(lon), fy(lat)], Ee = [fx(c.lng), fy(c.lat)];
     const r1 = Math.round((S[1] - .5) / 3) * 3 + .5, c2 = Math.round((Ee[0] - .5) / 3) * 3 + .5;
@@ -2430,6 +2442,49 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
       if (t >= t0 && !fitBox) setCam(X - vw / 2, Y - vh / 2);
       if (dist < total) carAnim = requestAnimationFrame(step); else { draw(0, dir); setMarkers(true); select(c, 'marker'); showPop(c); say('Arrived: ' + c.name + '.'); } };
     if (overview){ fitBox = null; prevView = null; zi = 0; resize(); } carAnim = requestAnimationFrame(step); }
+
+
+  /* ============ AIRPLANE FLY-IN (addresses beyond the largest map) ============ */
+  const PLANE = ['........K........', '.......KPK.......', '.......KPK.......', '......KPPPK......', '...KKKKPPPKKKK...', '.KKPPPPPPPPPPPKK.', 'KPPPPPPPRPPPPPPPK', '.KKKKKKKPKKKKKKK.', '.......KPK.......', '.......KPK.......', '......KPPPK......', '.....KKPPPKK.....', '...KKPPPPPPPKK...', '...KKKKKPKKKKK...', '.......KKK.......'];
+  function planeCanvas(){ const c = document.createElement('canvas'); c.width = 17; c.height = 15; const k = c.getContext('2d'), col = { K: '#2B0B4F', P: '#FFF0D1', R: '#FF2E93' };
+    PLANE.forEach((row, y) => { for (let X = 0; X < 17; X++){ const ch = row[X]; if (ch === '.') continue; k.fillStyle = col[ch]; k.fillRect(X, y, 1, 1); } }); return c; }
+  let planeEl = null, bubbleEl = null, bubbleT = 0, flyAnim = 0;
+  function stopFlight(){ cancelAnimationFrame(flyAnim); clearTimeout(bubbleT); if (planeEl){ planeEl.remove(); planeEl = null; } if (bubbleEl){ bubbleEl.remove(); bubbleEl = null; } const was = flying || zAnim != null; flying = false; zAnim = null; if (was) resize(); }
+  const isLand = (x, y) => { const tx = Math.floor(x / TS), ty = Math.floor(y / TS); if (tx < 1 || ty < 1 || tx >= GW - 1 || ty >= GH - 1) return false; const d = G[ty * GW + tx]; return !!d && d.k !== 'water'; };
+  function landFor(c, lat, lon){ const P0 = [fx(c.lng) * TS, fy(c.lat) * TS]; let dx = fx(lon) * TS - P0[0], dy = fy(lat) * TS - P0[1]; const L = Math.hypot(dx, dy) || 1; dx /= L; dy /= L;
+    for (const dist of [120, 160, 200, 90]) for (const ang of [0, 30, -30, 60, -60, 90, -90, 120, -120, 150, -150, 180]){ const a = ang * Math.PI / 180, ux = dx * Math.cos(a) - dy * Math.sin(a), uy = dx * Math.sin(a) + dy * Math.cos(a), X = P0[0] + ux * dist, Y = P0[1] + uy * dist; if (isLand(X, Y)) return [X, Y]; }
+    return P0; }
+  const eIO = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2, eS = t => -(Math.cos(Math.PI * t) - 1) / 2, lerp = (a, b, t) => a + (b - a) * t;
+  async function flyIn(lat, lon){
+    const ord = clubs.map(c => ({ c, d: hav(lat, lon, c.lat, c.lng) })).sort((a, b) => a.d - b.d), C = ord[0].c, Rt = regionOf(C.lat, C.lng) || curKey;
+    stopFlight(); await goRegion(Rt); clearHome(); stopFlight();
+    trip = { lat, lon, order: ord, idx: 0, cur: null, outside: true };
+    if (fitBox){ leaveFit(); } enterFit(); setMarkers(true);
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r))); if (!trip || !fitBox) return;
+    const A = [fx(lon) * TS, fy(lat) * TS], PC = [fx(C.lng) * TS, fy(C.lat) * TS], R = [camX, camY, camX + vw, camY + vh];
+    let S = A, edge = null;
+    if (A[0] < R[0] || A[0] > R[2] || A[1] < R[1] || A[1] > R[3]){ const dx = A[0] - PC[0], dy = A[1] - PC[1]; let tm = 1;
+      if (dx > 0){ const t = (R[2] - PC[0]) / dx; if (t < tm){ tm = t; edge = 'E'; } } else if (dx < 0){ const t = (R[0] - PC[0]) / dx; if (t < tm){ tm = t; edge = 'W'; } }
+      if (dy > 0){ const t = (R[3] - PC[1]) / dy; if (t < tm){ tm = t; edge = 'S'; } } else if (dy < 0){ const t = (R[1] - PC[1]) / dy; if (t < tm){ tm = t; edge = 'N'; } }
+      S = [PC[0] + dx * tm, PC[1] + dy * tm]; }
+    const L = landFor(C, lat, lon), head = Math.atan2(L[0] - S[0], -(L[1] - S[1])) * 180 / Math.PI;
+    const Zw = regionFitZ(), Z0 = Z, c0 = [camX + vw / 2, camY + vh / 2], rv = vp.getBoundingClientRect();
+    say(edge ? 'Found it! That address is beyond our maps, so an airplane is flying in from the ' + ({ N: 'north', S: 'south', E: 'east', W: 'west' })[edge] + '…' : 'Found it! An airplane is on its way to your nearest squash club…');
+    const begin = () => { if (!trip || !fitBox) return; if (bubbleEl){ bubbleEl.remove(); bubbleEl = null; }
+      planeEl = el_('div', 'plane'); planeEl.append(planeCanvas()); planeEl.style.setProperty('--r', head + 'deg'); planeEl.style.setProperty('--x', S[0]); planeEl.style.setProperty('--y', S[1]); world.append(planeEl);
+      flying = true; const D = 9500, U1 = .55, t0 = performance.now();
+      const step = (t) => { if (!flying || !planeEl) return; const u = Math.min(1, (t - t0) / D), pu = eS(u), Px = lerp(S[0], L[0], pu), Py = lerp(S[1], L[1], pu);
+        if (u < U1){ const e = eIO(u / U1), Zc = Math.exp(lerp(Math.log(Z0), Math.log(Zw), e)); fitBox = { w: rv.width / Zc, h: rv.height / Zc }; resize(); setCam(lerp(c0[0], Px, e) - vw / 2, lerp(c0[1], Py, e) - vh / 2); }
+        else { if (fitBox){ fitBox = null; prevView = null; zi = LEVELS.length - 1; zAnim = Zw; resize(); } const e = eIO((u - U1) / (1 - U1)); zAnim = Math.exp(lerp(Math.log(Zw), 0, e)); resize(); setCam(Px - vw / 2, Py - vh / 2); }
+        planeEl.style.setProperty('--x', Px); planeEl.style.setProperty('--y', Py); dirty = false; render();
+        if (u < 1) flyAnim = requestAnimationFrame(step);
+        else { const tr = trip; planeEl.remove(); planeEl = null; flying = false; zAnim = null; zi = 1; resize(); setCam(L[0] - vw / 2, L[1] - vh / 2); trip = tr; goClub(); } };
+      flyAnim = requestAnimationFrame(step); };
+    if (edge){ const fr = vp.closest('.pxmap-frame'), fb = fr.getBoundingClientRect(); if (getComputedStyle(fr).position === 'static') fr.style.position = 'relative';
+      let sx = (S[0] - camX) * Z + vp.clientLeft, sy = (S[1] - camY) * Z + vp.clientTop; const off = 14; if (edge === 'N') sy -= off; if (edge === 'S') sy += off; if (edge === 'E') sx += off; if (edge === 'W') sx -= off;
+      bubbleEl = el_('div', 'plane-bubble'); bubbleEl.style.left = (rv.left - fb.left + sx) + 'px'; bubbleEl.style.top = (rv.top - fb.top + sy) + 'px'; const pc = planeCanvas(); pc.style.setProperty('--r', head + 'deg'); bubbleEl.append(pc); fr.append(bubbleEl);
+      bubbleT = setTimeout(() => { if (bubbleEl) bubbleEl.classList.add('out'); setTimeout(begin, 250); }, 3000); }
+    else bubbleT = setTimeout(begin, 600); }
 
   /* ============ GO ============ */
   new ResizeObserver(resize).observe(vp);
