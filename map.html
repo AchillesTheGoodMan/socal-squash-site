@@ -894,12 +894,26 @@
   .addr-row button{ font:400 .62rem 'Press Start 2P','Courier New',monospace; padding:0 16px; background:var(--court-blue); color:#fff; border:3px solid #000; box-shadow:3px 3px 0 var(--hot-pink); cursor:pointer; }
   .addr-row button:disabled{ opacity:.6; cursor:wait; }
   .addr-msg{ margin-top:10px; font-size:.82rem; color:var(--slate); }
+  .addr-msg:empty{ display:none; }
   .addr-msg.err{ color:#B0123A; font-weight:600; }
   .home-marker{ position:absolute; left:calc(var(--x) * var(--z) * 1px); top:calc(var(--y) * var(--z) * 1px); width:44px; height:44px; transform:translate(-50%,-50%); z-index:8; pointer-events:none; animation:hm-bounce .7s steps(2) infinite alternate; }
   .home-marker canvas{ width:100%; height:100%; image-rendering:pixelated; display:block; filter: drop-shadow(0 0 0 #fff) drop-shadow(3px 4px 0 rgba(20,5,43,.6)); }
   .home-marker span{ position:absolute; left:50%; bottom:100%; transform:translateX(-50%); margin-bottom:4px; background:#FF2E93; color:#fff; border:3px solid #000; padding:5px 7px 4px; font:400 9px 'Press Start 2P','Courier New',monospace; letter-spacing:.06em; box-shadow:2px 2px 0 #000; }
   .home-marker span::after{ content:""; position:absolute; left:50%; top:100%; transform:translateX(-50%); border:5px solid transparent; border-top-color:#000; }
   @keyframes hm-bounce{ 0%{ margin-top:0 } 100%{ margin-top:-5px } }
+  .club-pop{ left:10px; bottom:10px; width:min(310px, calc(100% - 20px)); background:#FFF1D1; border:4px solid #000; box-shadow:0 0 0 3px #594a18 inset, 5px 5px 0 var(--hot-pink); padding:14px 16px 12px; color:var(--ink); animation: pop-in .25s steps(4); }
+  .club-pop[hidden]{ display:none; }
+  .club-pop .t{ font:400 7px 'Press Start 2P','Courier New',monospace; color:var(--pink-text); letter-spacing:.08em; margin-bottom:9px; }
+  .club-pop dl{ margin:0; } .club-pop .r{ padding:6px 0; border-top:2px dotted #b49c6c; font-size:.88rem; line-height:1.25; }
+  .club-pop .r:first-of-type{ border-top:0; padding-top:0; }
+  .club-pop dt{ font-size:.66rem; letter-spacing:.09em; text-transform:uppercase; color:var(--slate); margin-bottom:1px; }
+  .club-pop dd{ margin:0; font-weight:600; word-break:break-word; } .club-pop dd.club{ font-size:1.05rem; color:var(--court-blue); }
+  .club-pop a{ color:var(--accent-text); } .club-pop .x{ position:absolute; right:6px; top:4px; background:none; border:0; font:700 18px/1 sans-serif; cursor:pointer; color:var(--court-blue); padding:4px 8px; }
+  @keyframes pop-in{ 0%{ transform:translateY(16px); opacity:0 } 100%{ transform:none; opacity:1 } }
+  @media (max-width: 640px){ .club-pop{ bottom:46px; } }
+  .car{ position:absolute; left:calc(var(--x) * var(--z) * 1px); top:calc(var(--y) * var(--z) * 1px); width:calc(var(--z) * 20px); height:calc(var(--z) * 12px); transform:translate(-50%,-72%); z-index:9; pointer-events:none; }
+  .car canvas{ width:100%; height:100%; image-rendering:pixelated; display:block; transform:scaleX(var(--f,1)); animation: car-pop .5s steps(5); filter: drop-shadow(0 3px 0 rgba(20,5,43,.55)); }
+  @keyframes car-pop{ 0%{ transform:scale(0) scaleX(var(--f,1)) } 60%{ transform:scale(1.5) scaleX(var(--f,1)) } 100%{ transform:scale(1) scaleX(var(--f,1)) } }
   .map-loading{ position:absolute; inset:0; z-index:40; background:#181008; color:#FFB84D; display:grid; place-items:center; text-align:center; font-family:'Press Start 2P','Courier New',monospace; font-size:11px; letter-spacing:.08em; line-height:2; transition: opacity .4s; }
   .map-loading.gone{ opacity:0; pointer-events:none; }
   .map-loading span{ display:block; animation: ld 1s steps(2) infinite alternate; }
@@ -994,7 +1008,7 @@
       <form class="addr-form" id="addrForm" autocomplete="street-address">
         <label for="addrIn">Find your home on the map</label>
         <div class="addr-row"><input id="addrIn" type="text" placeholder="Enter your address, e.g. 200 N Spring St, Los Angeles" aria-describedby="addrMsg"><button type="submit" id="addrGo">Find</button><button type="button" id="addrClear" hidden>Clear</button></div>
-        <div class="addr-msg" id="addrMsg" role="status" aria-live="polite">Your address is only used to place the pin and isn&rsquo;t saved. It&rsquo;s sent to OpenStreetMap to look up the location.</div>
+        <div class="addr-msg" id="addrMsg" role="status" aria-live="polite"></div>
       </form>
     </div>
     <div class="map-layout">
@@ -1005,6 +1019,7 @@
             <div class="world" id="world"></div>
             <div class="map-ui hud" aria-live="polite"><small>&#9654; NOW IN</small><b id="hudName">DOWNTOWN</b></div>
             <div class="map-ui zoom"><button type="button" id="zoomIn" aria-label="Zoom in">+</button><button type="button" id="zoomOut" aria-label="Zoom out to see more">&minus;</button></div>
+            <div class="map-ui club-pop" id="clubPop" hidden aria-live="polite"></div>
             <div class="map-ui drag-hint" id="dragHint">&#10021; DRAG TO EXPLORE</div>
             <div class="map-ui mini-wrap" aria-hidden="true"><canvas id="miniMap" width="436" height="394"></canvas><div id="miniView"></div></div>
             <div class="map-loading" id="mapLoading"><div><span>LOADING</span><span>LOS ANGELES&hellip;</span></div></div>
@@ -2122,7 +2137,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   const addrForm = document.getElementById('addrForm'), addrIn = document.getElementById('addrIn'), addrMsg = document.getElementById('addrMsg'), addrGo = document.getElementById('addrGo'), addrClear = document.getElementById('addrClear');
   const defMsg = addrMsg ? addrMsg.textContent : ''; let homeEl = null;
   const say = (t, err) => { addrMsg.textContent = t; addrMsg.classList.toggle('err', !!err); };
-  function clearHome(){ if (homeEl){ homeEl.remove(); homeEl = null; } addrClear.hidden = true; }
+  function clearHome(){ stopCar(); if (homeEl){ homeEl.remove(); homeEl = null; } addrClear.hidden = true; }
   function placeHome(lat, lon){ clearHome(); homeEl = el_('div', 'home-marker'); homeEl.style.setProperty('--x', fx(lon) * TS); homeEl.style.setProperty('--y', fy(lat) * TS);
     homeEl.append(ballCanvas(), el_('span', null, 'HOME')); world.append(homeEl); addrClear.hidden = false; if (hint) hint.classList.add('gone'); panTo(lon, lat); }
   if (addrForm){
@@ -2134,10 +2149,48 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
         if (!j.length){ clearHome(); say('We couldn’t find that address. Try adding the city and ZIP code.', true); }
         else { const lat = parseFloat(j[0].lat), lon = parseFloat(j[0].lon);
           if (lat < LAT0 || lat > LAT1 || lon < LON0 || lon > LON1){ clearHome(); say('That address is outside the Greater LA area shown on this map.', true); }
-          else { placeHome(lat, lon); say('Found it! Your home is marked with a squash ball. Turn on “Show Squash Facilities” to see clubs nearby.'); } }
+          else { placeHome(lat, lon); const nc = nearestClub(lat, lon); say(nc ? 'Found it! Here comes your ride to the nearest squash club…' : 'Found it! Your home is marked with a squash ball.'); if (nc) driveTo(lat, lon, nc); } }
       } catch (err){ say('Sorry, the address lookup isn’t available right now. Please try again in a moment.', true); }
       addrGo.disabled = false; });
     addrClear.addEventListener('click', () => { clearHome(); addrIn.value = ''; say(defMsg); }); }
+
+  /* ============ CAR: pops up at HOME, drives to the nearest club ============ */
+  function carSprite(fr){ const { c, x } = cv(20, 12);
+    rect(x, 1, 6, 18, 3, P.rust); rect(x, 1, 5, 18, 1, '#E04848'); rect(x, 2, 4, 16, 2, '#E04848'); rect(x, 5, 1, 9, 4, '#E04848'); rect(x, 6, 2, 3, 2, P.w5); rect(x, 10, 2, 3, 2, P.w5); rect(x, 9, 1, 1, 3, '#E04848');
+    rect(x, 5, 1, 9, 1, '#F89090'); rect(x, 1, 5, 2, 1, P.cream); rect(x, 17, 5, 2, 1, P.yellow); rect(x, 1, 7, 18, 1, P.rust);
+    [[4], [14]].forEach(w => { const X = w[0]; disc(x, X + 1, 9, 2, 2, P.plum); pset(x, X + 1, 9, P.stone2); if (fr) pset(x, X + 1, 8, P.stone2); else pset(x, X + 2, 10, P.stone2); });
+    return outline(c, P.plum); }
+  const CAR = [carSprite(0), carSprite(1)];
+  const pop = document.getElementById('clubPop'); let carEl = null, carCv = null, carAnim = 0, carTimer = 0;
+  const hav = (a, b, c2, d) => { const R = 6371, t = Math.PI / 180, dl = (c2 - a) * t, dn = (d - b) * t; const q = Math.sin(dl / 2) ** 2 + Math.cos(a * t) * Math.cos(c2 * t) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(q)); };
+  function nearestClub(lat, lon){ let best = null, bd = 1e9; clubs.forEach(c => { if (!onMap(c)) return; const d = hav(lat, lon, c.lat, c.lng); if (d < bd){ bd = d; best = c; } }); return best; }
+  function hidePop(){ pop.hidden = true; pop.replaceChildren(); }
+  function stopCar(){ cancelAnimationFrame(carAnim); clearInterval(carTimer); if (carEl){ carEl.remove(); carEl = null; } hidePop(); }
+  function showPop(c){ const d = details(c); pop.replaceChildren();
+    const x = el_('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', hidePop); pop.append(x, el_('div', 't', '▶ NEAREST SQUASH CLUB'));
+    const dl = el_('dl'); const R = (k, node, cls) => { const r = el_('div', 'r'); r.append(el_('dt', null, k)); const dd = el_('dd', cls || null); dd.append(node); r.append(dd); dl.append(r); };
+    R('Name of Club', document.createTextNode(c.name), 'club');
+    R('Head Pro', document.createTextNode(d.role === 'Club phone' ? 'Front desk / club line' : (d.name || 'Not listed')));
+    R('Email', d.email ? link(d.email, 'mailto:' + d.email) : none());
+    R('Phone', d.phone ? link(d.phone, 'tel:' + d.phone.replace(/[^\d+]/g, '')) : none());
+    pop.append(dl); pop.hidden = false; }
+  function driveTo(lat, lon, c){
+    stopCar(); const S = [fx(lon), fy(lat)], Ee = [fx(c.lng), fy(c.lat)];
+    const r1 = Math.round((S[1] - .5) / 3) * 3 + .5, c2 = Math.round((Ee[0] - .5) / 3) * 3 + .5;
+    const pts = [S, [S[0], r1], [c2, r1], [c2, Ee[1]], Ee].map(q => [q[0] * TS, q[1] * TS]); const segs = []; let total = 0;
+    for (let i = 0; i < pts.length - 1; i++){ const L = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); if (L > 0){ segs.push({ a: pts[i], b: pts[i + 1], L, s: total }); total += L; } }
+    carEl = el_('div', 'car'); carCv = document.createElement('canvas'); carCv.width = 20; carCv.height = 12; carEl.append(carCv); world.append(carEl);
+    const draw = (fr, dir) => { const k = carCv.getContext('2d'); k.clearRect(0, 0, 20, 12); k.drawImage(CAR[fr], 0, 0); carEl.style.setProperty('--f', dir); };
+    const place = (X, Y) => { carEl.style.setProperty('--x', X); carEl.style.setProperty('--y', Y); };
+    place(S[0] * TS, S[1] * TS); draw(0, 1); let dir = 1;
+    const speed = Math.max(150, total / 7), t0 = performance.now() + 900;                       // 0.9 s pop-up pause, then drive
+    const step = (t) => { if (!carEl) return; const dist = Math.max(0, Math.min(total, (t - t0) / 1000 * speed));
+      let sg = segs[segs.length - 1]; for (const q of segs) if (dist <= q.s + q.L){ sg = q; break; }
+      const k = sg ? (dist - sg.s) / sg.L : 1, X = sg ? sg.a[0] + (sg.b[0] - sg.a[0]) * k : S[0] * TS, Y = sg ? sg.a[1] + (sg.b[1] - sg.a[1]) * k : S[1] * TS;
+      if (sg && Math.abs(sg.b[0] - sg.a[0]) > 0.5) dir = sg.b[0] > sg.a[0] ? 1 : -1; draw(Math.floor(t / 90) & 1, dir); place(X, Y);
+      if (t >= t0) setCam(X - vw / 2, Y - vh / 2);
+      if (dist < total) carAnim = requestAnimationFrame(step); else { draw(0, dir); setMarkers(true); select(c, 'marker'); showPop(c); say('Nearest club: ' + c.name + '.'); } };
+    if (overview){ zi = 1; resize(); } carAnim = requestAnimationFrame(step); }
 
   /* ============ GO ============ */
   new ResizeObserver(resize).observe(vp);
