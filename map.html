@@ -909,6 +909,11 @@
   .club-pop dt{ font-size:.66rem; letter-spacing:.09em; text-transform:uppercase; color:var(--slate); margin-bottom:1px; }
   .club-pop dd{ margin:0; font-weight:600; word-break:break-word; } .club-pop dd.club{ font-size:1.05rem; color:var(--court-blue); }
   .club-pop a{ color:var(--accent-text); } .club-pop .x{ position:absolute; right:6px; top:4px; background:none; border:0; font:700 18px/1 sans-serif; cursor:pointer; color:var(--court-blue); padding:4px 8px; }
+  .club-pop{ max-height: calc(100% - 20px); overflow:auto; }
+  .club-pop .note{ font-size:.7rem; color:var(--slate); margin-top:6px; }
+  .club-pop .next{ display:block; width:100%; margin-top:10px; padding:11px 10px 10px; background:var(--court-blue); color:#fff; border:3px solid #000; box-shadow:3px 3px 0 var(--hot-pink); font:400 .56rem 'Press Start 2P','Courier New',monospace; letter-spacing:.04em; cursor:pointer; }
+  .club-pop .next:hover{ transform:translate(1px,1px); box-shadow:2px 2px 0 var(--hot-pink); }
+  .club-pop .eta{ color:var(--court-blue); }
   @keyframes pop-in{ 0%{ transform:translateY(16px); opacity:0 } 100%{ transform:none; opacity:1 } }
   @media (max-width: 640px){ .club-pop{ bottom:46px; } }
   .car{ position:absolute; left:calc(var(--x) * var(--z) * 1px); top:calc(var(--y) * var(--z) * 1px); width:calc(var(--z) * 20px); height:calc(var(--z) * 12px); transform:translate(-50%,-72%); z-index:9; pointer-events:none; }
@@ -2137,7 +2142,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   const addrForm = document.getElementById('addrForm'), addrIn = document.getElementById('addrIn'), addrMsg = document.getElementById('addrMsg'), addrGo = document.getElementById('addrGo'), addrClear = document.getElementById('addrClear');
   const defMsg = addrMsg ? addrMsg.textContent : ''; let homeEl = null;
   const say = (t, err) => { addrMsg.textContent = t; addrMsg.classList.toggle('err', !!err); };
-  function clearHome(){ stopCar(); if (homeEl){ homeEl.remove(); homeEl = null; } addrClear.hidden = true; }
+  function clearHome(){ trip = null; stopCar(); if (homeEl){ homeEl.remove(); homeEl = null; } addrClear.hidden = true; }
   function placeHome(lat, lon){ clearHome(); homeEl = el_('div', 'home-marker'); homeEl.style.setProperty('--x', fx(lon) * TS); homeEl.style.setProperty('--y', fy(lat) * TS);
     homeEl.append(ballCanvas(), el_('span', null, 'HOME')); world.append(homeEl); addrClear.hidden = false; if (hint) hint.classList.add('gone'); panTo(lon, lat); }
   if (addrForm){
@@ -2149,7 +2154,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
         if (!j.length){ clearHome(); say('We couldn’t find that address. Try adding the city and ZIP code.', true); }
         else { const lat = parseFloat(j[0].lat), lon = parseFloat(j[0].lon);
           if (lat < LAT0 || lat > LAT1 || lon < LON0 || lon > LON1){ clearHome(); say('That address is outside the Greater LA area shown on this map.', true); }
-          else { placeHome(lat, lon); const nc = nearestClub(lat, lon); say(nc ? 'Found it! Here comes your ride to the nearest squash club…' : 'Found it! Your home is marked with a squash ball.'); if (nc) driveTo(lat, lon, nc); } }
+          else { placeHome(lat, lon); const ord = orderClubs(lat, lon); trip = ord.length ? { lat, lon, order: ord, idx: 0, cur: null } : null; say(trip ? 'Found it! Here comes your ride to the nearest squash club…' : 'Found it! Your home is marked with a squash ball.'); if (trip) goClub(); } }
       } catch (err){ say('Sorry, the address lookup isn’t available right now. Please try again in a moment.', true); }
       addrGo.disabled = false; });
     addrClear.addEventListener('click', () => { clearHome(); addrIn.value = ''; say(defMsg); }); }
@@ -2164,16 +2169,32 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   const pop = document.getElementById('clubPop'); let carEl = null, carCv = null, carAnim = 0, carTimer = 0;
   const hav = (a, b, c2, d) => { const R = 6371, t = Math.PI / 180, dl = (c2 - a) * t, dn = (d - b) * t; const q = Math.sin(dl / 2) ** 2 + Math.cos(a * t) * Math.cos(c2 * t) * Math.sin(dn / 2) ** 2; return 2 * R * Math.asin(Math.sqrt(q)); };
   function nearestClub(lat, lon){ let best = null, bd = 1e9; clubs.forEach(c => { if (!onMap(c)) return; const d = hav(lat, lon, c.lat, c.lng); if (d < bd){ bd = d; best = c; } }); return best; }
+  let trip = null; const etaCache = {};
+  function orderClubs(lat, lon){ return clubs.filter(onMap).map(c => ({ c, d: hav(lat, lon, c.lat, c.lng) })).sort((a, b) => a.d - b.d); }
+  const fmtT = (min) => min < 60 ? Math.max(1, Math.round(min)) + ' min' : Math.floor(min / 60) + ' hr ' + (Math.round(min) % 60) + ' min';
+  async function getEta(lat, lon, c){ const key = lat.toFixed(5) + ',' + lon.toFixed(5) + '>' + c.name; if (etaCache[key]) return etaCache[key];
+    let out; try { const ctl = new AbortController(), to = setTimeout(() => ctl.abort(), 6000);
+      const r = await fetch('https://router.project-osrm.org/route/v1/driving/' + lon + ',' + lat + ';' + c.lng + ',' + c.lat + '?overview=false', { signal: ctl.signal }); clearTimeout(to);
+      const j = await r.json(); if (j.code === 'Ok' && j.routes && j.routes[0]) out = { min: j.routes[0].duration / 60, mi: j.routes[0].distance / 1609.34, est: false }; } catch (_) {}
+    if (!out){ const km = hav(lat, lon, c.lat, c.lng) * 1.35; out = { min: km / 40 * 60 + 2, mi: km / 1.609, est: true }; }
+    etaCache[key] = out; return out; }
   function hidePop(){ pop.hidden = true; pop.replaceChildren(); }
   function stopCar(){ cancelAnimationFrame(carAnim); clearInterval(carTimer); if (carEl){ carEl.remove(); carEl = null; } hidePop(); }
   function showPop(c){ const d = details(c); pop.replaceChildren();
-    const x = el_('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', hidePop); pop.append(x, el_('div', 't', '▶ NEAREST SQUASH CLUB'));
-    const dl = el_('dl'); const R = (k, node, cls) => { const r = el_('div', 'r'); r.append(el_('dt', null, k)); const dd = el_('dd', cls || null); dd.append(node); r.append(dd); dl.append(r); };
+    const x = el_('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', hidePop);
+    const rank = trip ? trip.idx + 1 : 1, tot = trip ? trip.order.length : 1;
+    pop.append(x, el_('div', 't', (rank === 1 ? '▶ CLOSEST SQUASH CLUB' : '▶ #' + rank + ' CLOSEST CLUB') + ' · ' + rank + ' OF ' + tot));
+    const dl = el_('dl'); const R = (k, node, cls) => { const r = el_('div', 'r'); r.append(el_('dt', null, k)); const dd = el_('dd', cls || null); dd.append(node); r.append(dd); dl.append(r); return dd; };
     R('Name of Club', document.createTextNode(c.name), 'club');
     R('Head Pro', document.createTextNode(d.role === 'Club phone' ? 'Front desk / club line' : (d.name || 'Not listed')));
     R('Email', d.email ? link(d.email, 'mailto:' + d.email) : none());
     R('Phone', d.phone ? link(d.phone, 'tel:' + d.phone.replace(/[^\d+]/g, '')) : none());
-    pop.append(dl); pop.hidden = false; }
+    const eta = R('Drive Time', document.createTextNode('Calculating…'), 'eta'); pop.append(dl);
+    if (trip){ getEta(trip.lat, trip.lon, c).then(v => { if (trip && trip.cur === c) eta.textContent = '~' + fmtT(v.min) + ' (' + v.mi.toFixed(1) + ' mi)' + (v.est ? ' · estimate' : ''); });
+      pop.append(el_('div', 'note', 'Typical drive from your address, without traffic.'));
+      if (tot > 1){ const nb = el_('button', 'next', rank < tot ? 'NEXT CLOSEST CLUB ▶' : '◀ BACK TO CLOSEST CLUB'); nb.type = 'button'; nb.addEventListener('click', () => { trip.idx = (trip.idx + 1) % tot; goClub(); }); pop.append(nb); } }
+    pop.hidden = false; }
+  function goClub(){ const c = trip.order[trip.idx].c; trip.cur = c; hidePop(); say((trip.idx === 0 ? 'Heading to the closest club: ' : 'Next closest: ') + c.name + '…'); driveTo(trip.lat, trip.lon, c); getEta(trip.lat, trip.lon, c); }
   function driveTo(lat, lon, c){
     stopCar(); const S = [fx(lon), fy(lat)], Ee = [fx(c.lng), fy(c.lat)];
     const r1 = Math.round((S[1] - .5) / 3) * 3 + .5, c2 = Math.round((Ee[0] - .5) / 3) * 3 + .5;
@@ -2189,7 +2210,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
       const k = sg ? (dist - sg.s) / sg.L : 1, X = sg ? sg.a[0] + (sg.b[0] - sg.a[0]) * k : S[0] * TS, Y = sg ? sg.a[1] + (sg.b[1] - sg.a[1]) * k : S[1] * TS;
       if (sg && Math.abs(sg.b[0] - sg.a[0]) > 0.5) dir = sg.b[0] > sg.a[0] ? 1 : -1; draw(Math.floor(t / 90) & 1, dir); place(X, Y);
       if (t >= t0) setCam(X - vw / 2, Y - vh / 2);
-      if (dist < total) carAnim = requestAnimationFrame(step); else { draw(0, dir); setMarkers(true); select(c, 'marker'); showPop(c); say('Nearest club: ' + c.name + '.'); } };
+      if (dist < total) carAnim = requestAnimationFrame(step); else { draw(0, dir); setMarkers(true); select(c, 'marker'); showPop(c); say('Arrived: ' + c.name + '.'); } };
     if (overview){ zi = 1; resize(); } carAnim = requestAnimationFrame(step); }
 
   /* ============ GO ============ */
