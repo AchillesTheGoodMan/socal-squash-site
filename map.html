@@ -2405,7 +2405,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
     if (!out){ const km = hav(lat, lon, c.lat, c.lng) * 1.35; const spd = km < 30 ? 40 : km < 150 ? 65 : 85; out = { min: km / spd * 60 + 2, mi: km / 1.609, est: true }; }
     etaCache[key] = out; return out; }
   function hidePop(){ pop.hidden = true; pop.replaceChildren(); }
-  function stopCar(){ stopFlight(); cancelAnimationFrame(carAnim); clearInterval(carTimer); if (carEl){ carEl.remove(); carEl = null; } hidePop(); }
+  function stopCar(keep){ if (!keep) stopFlight(); cancelAnimationFrame(carAnim); clearInterval(carTimer); if (carEl){ carEl.remove(); carEl = null; } hidePop(); }
   function showPop(c){ const d = details(c); pop.replaceChildren();
     const x = el_('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', hidePop);
     const rank = trip ? trip.idx + 1 : 1, tot = trip ? trip.order.length : 1;
@@ -2420,13 +2420,13 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
       pop.append(el_('div', 'note', 'Typical drive from your address, without traffic.'));
       if (tot > 1){ const nb = el_('button', 'next', rank < tot ? 'NEXT CLOSEST CLUB ▶' : '◀ BACK TO CLOSEST CLUB'); nb.type = 'button'; nb.addEventListener('click', () => { trip.idx = (trip.idx + 1) % tot; goClub(); }); pop.append(nb); } }
     pop.hidden = false; }
-  async function goClub(){ let c = trip.order[trip.idx].c; trip.cur = c; hidePop(); say((trip.idx === 0 ? 'Heading to the closest club: ' : 'Next closest: ') + c.name + '…');
+  async function goClub(startPt){ let c = trip.order[trip.idx].c; trip.cur = c; hidePop(); say((trip.idx === 0 ? 'Heading to the closest club: ' : 'Next closest: ') + c.name + '…');
     let st = [trip.lat, trip.lon];
     if (trip.outside){ const t = trip, rk = regionOf(c.lat, c.lng); if (rk && rk !== curKey){ await goRegion(rk); trip = t; trip.cur = c; zi = 1; resize(); }
-      const L = landFor(c, trip.lat, trip.lon); st = [latAt(L[1] / TS), lonAt(L[0] / TS)]; }
+      const L = startPt || landFor(c, trip.lat, trip.lon); st = [latAt(L[1] / TS), lonAt(L[0] / TS)]; }
     getEta(trip.lat, trip.lon, c); driveTo(st[0], st[1], c); }
   function driveTo(lat, lon, c){
-    stopCar(); const S = [fx(lon), fy(lat)], Ee = [fx(c.lng), fy(c.lat)];
+    stopCar(true); const S = [fx(lon), fy(lat)], Ee = [fx(c.lng), fy(c.lat)];
     const r1 = Math.round((S[1] - .5) / 3) * 3 + .5, c2 = Math.round((Ee[0] - .5) / 3) * 3 + .5;
     const pts = [S, [S[0], r1], [c2, r1], [c2, Ee[1]], Ee].map(q => [q[0] * TS, q[1] * TS]); const segs = []; let total = 0;
     for (let i = 0; i < pts.length - 1; i++){ const L = Math.hypot(pts[i + 1][0] - pts[i][0], pts[i + 1][1] - pts[i][1]); if (L > 0){ segs.push({ a: pts[i], b: pts[i + 1], L, s: total }); total += L; } }
@@ -2439,7 +2439,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
       let sg = segs[segs.length - 1]; for (const q of segs) if (dist <= q.s + q.L){ sg = q; break; }
       const k = sg ? (dist - sg.s) / sg.L : 1, X = sg ? sg.a[0] + (sg.b[0] - sg.a[0]) * k : S[0] * TS, Y = sg ? sg.a[1] + (sg.b[1] - sg.a[1]) * k : S[1] * TS;
       if (sg && Math.abs(sg.b[0] - sg.a[0]) > 0.5) dir = sg.b[0] > sg.a[0] ? 1 : -1; draw(Math.floor(t / 90) & 1, dir); place(X, Y);
-      if (t >= t0 && !fitBox) setCam(X - vw / 2, Y - vh / 2);
+      if (t >= t0 && !fitBox && !flying) setCam(X - vw / 2, Y - vh / 2);
       if (dist < total) carAnim = requestAnimationFrame(step); else { draw(0, dir); setMarkers(true); select(c, 'marker'); showPop(c); say('Arrived: ' + c.name + '.'); } };
     if (overview){ fitBox = null; prevView = null; zi = 0; resize(); } carAnim = requestAnimationFrame(step); }
 
@@ -2473,12 +2473,14 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
     const begin = () => { if (!trip || !fitBox) return; if (bubbleEl){ bubbleEl.remove(); bubbleEl = null; }
       planeEl = el_('div', 'plane'); planeEl.append(planeCanvas()); planeEl.style.setProperty('--r', head + 'deg'); planeEl.style.setProperty('--x', S[0]); planeEl.style.setProperty('--y', S[1]); world.append(planeEl);
       flying = true; const D = 9500, U1 = .55, t0 = performance.now();
-      const step = (t) => { if (!flying || !planeEl) return; const u = Math.min(1, (t - t0) / D), pu = eS(u), Px = lerp(S[0], L[0], pu), Py = lerp(S[1], L[1], pu);
+      let swapped = false; const step = (t) => { if (!flying) return; const u = Math.min(1, (t - t0) / D), pu = eS(u), Px = lerp(S[0], L[0], pu), Py = lerp(S[1], L[1], pu);
         if (u < U1){ const e = eIO(u / U1), Zc = Math.exp(lerp(Math.log(Z0), Math.log(Zw), e)); fitBox = { w: rv.width / Zc, h: rv.height / Zc }; resize(); setCam(lerp(c0[0], Px, e) - vw / 2, lerp(c0[1], Py, e) - vh / 2); }
-        else { if (fitBox){ fitBox = null; prevView = null; zi = LEVELS.length - 1; zAnim = Zw; resize(); } const e = eIO((u - U1) / (1 - U1)); zAnim = Math.exp(lerp(Math.log(Zw), 0, e)); resize(); setCam(Px - vw / 2, Py - vh / 2); }
-        planeEl.style.setProperty('--x', Px); planeEl.style.setProperty('--y', Py); dirty = false; render();
+        else { if (fitBox){ fitBox = null; prevView = null; zi = LEVELS.length - 1; zAnim = Zw; resize(); } const e = eIO((u - U1) / (1 - U1)); zAnim = Math.exp(lerp(Math.log(Zw), 0, e)); resize();
+          if (!swapped && zAnim >= 0.5 && isLand(Px, Py)){ swapped = true; if (planeEl){ planeEl.remove(); planeEl = null; } goClub([Px, Py]); }
+          let fx_ = Px, fy_ = Py; if (swapped && carEl){ fx_ = parseFloat(carEl.style.getPropertyValue('--x')) || Px; fy_ = parseFloat(carEl.style.getPropertyValue('--y')) || Py; } setCam(fx_ - vw / 2, fy_ - vh / 2); }
+        if (planeEl){ planeEl.style.setProperty('--x', Px); planeEl.style.setProperty('--y', Py); } dirty = false; render();
         if (u < 1) flyAnim = requestAnimationFrame(step);
-        else { const tr = trip; planeEl.remove(); planeEl = null; flying = false; zAnim = null; zi = 1; resize(); setCam(L[0] - vw / 2, L[1] - vh / 2); trip = tr; goClub(); } };
+        else { const tr = trip; if (planeEl){ planeEl.remove(); planeEl = null; } flying = false; zAnim = null; zi = 1; resize(); if (swapped && carEl){ setCam((parseFloat(carEl.style.getPropertyValue('--x')) || L[0]) - vw / 2, (parseFloat(carEl.style.getPropertyValue('--y')) || L[1]) - vh / 2); } else { setCam(L[0] - vw / 2, L[1] - vh / 2); trip = tr; goClub(); } } };
       flyAnim = requestAnimationFrame(step); };
     if (edge){ const fr = vp.closest('.pxmap-frame'), fb = fr.getBoundingClientRect(); if (getComputedStyle(fr).position === 'static') fr.style.position = 'relative';
       let sx = (S[0] - camX) * Z + vp.clientLeft, sy = (S[1] - camY) * Z + vp.clientTop; const off = 14; if (edge === 'N') sy -= off; if (edge === 'S') sy += off; if (edge === 'E') sx += off; if (edge === 'W') sx -= off;
