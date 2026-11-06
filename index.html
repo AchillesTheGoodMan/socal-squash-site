@@ -177,9 +177,9 @@
     overflow: hidden;
     perspective: 260px;
     perspective-origin: 50% 0%;
-    background: linear-gradient(180deg, #14052B 0%, #2B0B4F 100%);
-    border-top: 2px solid var(--hot-pink);
-    box-shadow: 0 -6px 34px rgba(255,46,147,0.6);
+    background: linear-gradient(180deg, #1788B0 0%, #2FB8C9 55%, #5ED3D0 100%);
+    border-top: 3px solid #FFFFFF;
+    box-shadow: 0 -6px 34px rgba(255,200,140,0.55);
     pointer-events: none;
   }
   .hero-grid::before{
@@ -190,16 +190,18 @@
     transform-origin: 50% 0;
     transform: rotateX(68deg);
     background-image:
-      linear-gradient(rgba(255,46,147,0.8) 1.5px, transparent 1.5px),
-      linear-gradient(90deg, rgba(255,46,147,0.8) 1.5px, transparent 1.5px);
-    background-size: 64px 64px;
+      linear-gradient(rgba(255,255,255,0.85) 4px, transparent 4px),
+      linear-gradient(rgba(255,255,255,0.28) 2px, transparent 2px);
+    background-size: 100% 64px, 100% 32px;
     animation: grid-roll 3s linear infinite;
   }
   .hero-grid::after{
     content: '';
     position: absolute;
     inset: 0;
-    background: linear-gradient(180deg, rgba(20,5,43,0.85), rgba(20,5,43,0) 65%);
+    background:
+      linear-gradient(180deg, rgba(255,255,255,0) 0, rgba(255,255,255,0) 66%, #FFFFFF 66%, #FFFFFF 68%, #E8C07A 68%, #F6D894 100%),
+      linear-gradient(180deg, rgba(23,136,176,0.55), rgba(23,136,176,0) 55%);
   }
   @keyframes grid-roll{ to{ background-position: 0 64px; } }
   /* 8-bit squash rally, drawn on a tiny canvas and scaled up in whole pixels */
@@ -832,6 +834,35 @@
   .person h3{ font-family:var(--display); font-size:1.35rem; margin:0 0 2px; color:var(--court-blue); }
   .person .role{ font-size:.82rem; letter-spacing:.08em; text-transform:uppercase; color:var(--pink-text); font-weight:600; margin:0 0 8px; }
   .person p{ font-size:.92rem; color:var(--slate); margin:0; }
+
+  /* ---- clickable pro names + contact card ---- */
+  .pro-link{
+    font: inherit; color: inherit; background: none; border: 0; padding: 0; cursor: pointer;
+    text-decoration: underline; text-decoration-color: var(--hot-pink); text-underline-offset: 3px;
+  }
+  .pro-link:hover, .pro-link:focus-visible{ color: var(--pink-text); }
+  .contact-modal{
+    position: fixed; inset: 0; z-index: 2000; display: none; align-items: center; justify-content: center;
+    padding: 20px; background: rgba(20,5,43,0.65);
+  }
+  .contact-modal.open{ display: flex; }
+  .contact-card{
+    position: relative; width: min(380px, 100%); background: var(--chalk); color: var(--ink);
+    border-radius: 16px; padding: 28px 26px 24px; border-top: 6px solid var(--hot-pink);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+  }
+  .contact-card .cc-close{
+    position: absolute; top: 8px; right: 12px; font-size: 1.8rem; line-height: 1; background: none; border: 0;
+    cursor: pointer; color: var(--slate);
+  }
+  .contact-card .cc-role{ font-size: .75rem; letter-spacing: .1em; text-transform: uppercase; color: var(--pink-text); font-weight: 700; }
+  .contact-card h3{ font-family: var(--display); font-size: 1.9rem; margin: 4px 0 2px; color: var(--court-blue); }
+  .contact-card .cc-club{ color: var(--slate); font-size: .9rem; margin-bottom: 16px; }
+  .contact-card .cc-row{ display: flex; gap: 12px; padding: 10px 0; border-top: 1px solid rgba(91,26,139,.18); font-size: .95rem; }
+  .contact-card .cc-label{ width: 56px; color: var(--slate); font-size: .78rem; text-transform: uppercase; letter-spacing: .08em; padding-top: 2px; }
+  .contact-card a{ color: var(--accent-text); font-weight: 600; word-break: break-all; }
+  .contact-card .cc-none{ color: var(--slate); }
+  .contact-card .cc-note{ margin: 12px 0 0; font-size: .85rem; color: var(--slate); }
 </style>
 </head>
 <body>
@@ -843,8 +874,8 @@
     </a>
     <button class="nav-toggle" id="navToggle" aria-label="Toggle menu">Menu</button>
     <nav class="links" id="navLinks">
-      <a href="#tournaments">Events</a>
-      <a href="#clubs">Clubs & Courts</a>
+      <a href="#tournaments">Tournaments</a>
+      <a href="map.html">Play Now</a>
       <a href="#involved">Get Involved</a>
       <a href="people.html">People</a>
     </nav>
@@ -899,8 +930,8 @@
     <h1>SoCal Squash, where the <em>sun</em> <span class="white-part">meets the</span> <em>court</em>.</h1>
     <p class="lede">SoCal Squash is the official US Squash affiliate for the game of squash in Southern California. We are a 501(c)(3) non-profit organization, dedicated to promoting squash and connecting the community. Our region spans as far north as San Luis Obispo, all the way down to San Diego.</p>
     <div class="hero-ctas">
-      <a class="btn btn-primary" href="#tournaments">See Upcoming Events</a>
-      <a class="btn btn-ghost" href="#clubs">Find a Court</a>
+      <a class="btn btn-primary" href="#tournaments">See Upcoming Tournaments</a>
+      <a class="btn btn-ghost" href="#clubs">Clubs &amp; Courts</a>
     </div>
     <div class="hero-stats">
       <div class="stat"><span class="num">600+</span><span class="label">Players in the network</span></div>
@@ -965,41 +996,47 @@
           <h3>Los Angeles & the Valley</h3>
           <div class="club-item">
             <div><div class="club-name">Los Angeles Athletic Club</div><div class="club-addr">431 W 7th St, Los Angeles</div></div>
-            <div class="club-contact">Brett Newton</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Brett Newton">Brett Newton</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">Jonathan Club</div><div class="club-addr">545 S Figueroa St, Los Angeles</div></div>
-            <div class="club-contact">Gus Cook</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Gus Cook">Gus Cook</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">Los Angeles Squash Academy</div><div class="club-addr">920 Lohman Ln, South Pasadena</div></div>
-            <div class="club-contact">Aria Fazelimanesh</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Aria Fazelimanesh">Aria Fazelimanesh</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">Burbank Squash Club</div><div class="club-addr">444 N Irving Dr, Burbank</div></div>
-            <div class="club-contact">Aria Fazelimanesh</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Aria Fazelimanesh">Aria Fazelimanesh</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">Caltech Braun Athletic Center</div><div class="club-addr">1200 E California Blvd, Pasadena</div></div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Club Contact">Club Contact</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">UCLA Recreation</div><div class="club-addr">John Wooden Rec Center, Westwood</div></div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Club Contact">Club Contact</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">USC Lyon Center</div><div class="club-addr">1026 W 34th St, University Park</div></div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Club Contact">Club Contact</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">YMCA Ketchum Downtown</div><div class="club-addr">401 S Hope St, Los Angeles</div></div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Club Contact">Club Contact</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">Equinox Sports Club — West LA</div><div class="club-addr">1835 Sepulveda Blvd, West LA</div></div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Club Contact">Club Contact</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">TRIFIT Club & Studios</div><div class="club-addr">2425 Colorado Ave, Santa Monica</div></div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Club Contact">Club Contact</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">South End Racquet & Health Club</div><div class="club-addr">2800 Sky Park Dr, Torrance</div></div>
-            <div class="club-contact">Gus Cook</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Gus Cook">Gus Cook</button></div>
           </div>
         </div>
       </div>
@@ -1008,41 +1045,37 @@
           <h3>Orange County</h3>
           <div class="club-item">
             <div><div class="club-name">Equinox Sports Club — Orange County</div><div class="club-addr">1980 Main St, Irvine</div></div>
-            <div class="club-contact">Petr Husek</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Petr Husek">Petr Husek</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">Los Cab Sports Village</div><div class="club-addr">17272 Newhope St, Fountain Valley</div></div>
-            <div class="club-contact">Sam Daye</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Sam Daye">Sam Daye</button></div>
           </div>
         </div>
         <div class="region-block">
           <h3>San Diego</h3>
           <div class="club-item">
             <div><div class="club-name">Access Youth Academy</div><div class="club-addr">704 Euclid Ave, San Diego</div></div>
-            <div class="club-contact">Renato Paiva</div>
-          </div>
-          <div class="club-item">
-            <div><div class="club-name">San Diego Squash Club</div><div class="club-addr">9370 Waples St #101, San Diego</div></div>
-            <div class="club-contact">Dave Norton</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Renato Paiva">Renato Paiva</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">UC San Diego — RIMAC</div><div class="club-addr">9500 Gilman Dr, La Jolla</div></div>
-            <div class="club-contact">Dave Norton</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Club Contact">Club Contact</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">Bay Club Carmel Valley</div><div class="club-addr">12000 Carmel Country Rd, San Diego</div></div>
-            <div class="club-contact">Sally Norgate</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Sally Norgate">Sally Norgate</button></div>
           </div>
         </div>
         <div class="region-block">
           <h3>Santa Barbara</h3>
           <div class="club-item">
             <div><div class="club-name">Santa Barbara School of Squash</div><div class="club-addr">1530 Chapala St, Santa Barbara</div></div>
-            <div class="club-contact">Robert Graham</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Robert Graham">Robert Graham</button></div>
           </div>
           <div class="club-item">
             <div><div class="club-name">UC Santa Barbara</div><div class="club-addr">Recreation Center, Santa Barbara</div></div>
-            <div class="club-contact">Tim Thomas</div>
+            <div class="club-contact"><button type="button" class="pro-link" data-pro="Tim Thomas">Tim Thomas</button></div>
           </div>
         </div>
       </div>
@@ -1100,8 +1133,8 @@
     <div>
       <h3>Explore</h3>
       <ul>
-        <li><a href="#tournaments">Events</a></li>
-        <li><a href="#clubs">Clubs & Courts</a></li>
+        <li><a href="#tournaments">Tournaments</a></li>
+        <li><a href="map.html">Play Now</a></li>
         <li><a href="#involved">Get Involved</a></li>
         <li><a href="people.html">People</a></li>
       </ul>
@@ -1401,18 +1434,17 @@
     { name: "Jonathan Club", addr: "545 S Figueroa St, Los Angeles", contact: "Gus Cook", lat: 34.0512919, lng: -118.2584373 },
     { name: "Los Angeles Squash Academy", addr: "920 Lohman Ln, South Pasadena", contact: "Aria Fazelimanesh", lat: 34.1166191, lng: -118.1689055 },
     { name: "Burbank Squash Club", addr: "444 N Irving Dr, Burbank", contact: "Aria Fazelimanesh", lat: 34.2002702, lng: -118.3273033 },
-    { name: "Caltech Braun Athletic Center", addr: "1200 E California Blvd, Pasadena", contact: null, lat: 34.1340854, lng: -118.1277031 },
-    { name: "UCLA Recreation", addr: "John Wooden Rec Center, Westwood", contact: null, lat: 34.0712267, lng: -118.4457251 },
-    { name: "USC Lyon Center", addr: "1026 W 34th St, University Park", contact: null, lat: 34.0243846, lng: -118.2883821 },
-    { name: "YMCA Ketchum Downtown", addr: "401 S Hope St, Los Angeles", contact: null, lat: 34.0522735, lng: -118.2540913 },
-    { name: "Equinox Sports Club — West LA", addr: "1835 Sepulveda Blvd, West LA", contact: null, lat: 34.0453777, lng: -118.4428698 },
-    { name: "TRIFIT Club & Studios", addr: "2425 Colorado Ave, Santa Monica", contact: null, lat: 34.0295755, lng: -118.4731361 },
+    { name: "Caltech Braun Athletic Center", addr: "1200 E California Blvd, Pasadena", contact: "Club Contact", lat: 34.1340854, lng: -118.1277031 },
+    { name: "UCLA Recreation", addr: "John Wooden Rec Center, Westwood", contact: "Club Contact", lat: 34.0712267, lng: -118.4457251 },
+    { name: "USC Lyon Center", addr: "1026 W 34th St, University Park", contact: "Club Contact", lat: 34.0243846, lng: -118.2883821 },
+    { name: "YMCA Ketchum Downtown", addr: "401 S Hope St, Los Angeles", contact: "Club Contact", lat: 34.0522735, lng: -118.2540913 },
+    { name: "Equinox Sports Club — West LA", addr: "1835 Sepulveda Blvd, West LA", contact: "Club Contact", lat: 34.0453777, lng: -118.4428698 },
+    { name: "TRIFIT Club & Studios", addr: "2425 Colorado Ave, Santa Monica", contact: "Club Contact", lat: 34.0295755, lng: -118.4731361 },
     { name: "South End Racquet & Health Club", addr: "2800 Sky Park Dr, Torrance", contact: "Gus Cook", lat: 33.8055898, lng: -118.3385043 },
     { name: "Equinox Sports Club — Orange County", addr: "1980 Main St, Irvine", contact: "Petr Husek", lat: 33.6836103, lng: -117.8544035 },
     { name: "Los Cab Sports Village", addr: "17272 Newhope St, Fountain Valley", contact: "Sam Daye", lat: 33.7136956, lng: -117.9250523 },
     { name: "Access Youth Academy", addr: "704 Euclid Ave, San Diego", contact: "Renato Paiva", lat: 32.7128181, lng: -117.0853652 },
-    { name: "San Diego Squash Club", addr: "9370 Waples St #101, San Diego", contact: "Dave Norton", lat: 32.8964, lng: -117.1958 },
-    { name: "UC San Diego — RIMAC", addr: "9500 Gilman Dr, La Jolla", contact: "Dave Norton", lat: 32.8852786, lng: -117.2391227 },
+    { name: "UC San Diego — RIMAC", addr: "9500 Gilman Dr, La Jolla", contact: "Club Contact", lat: 32.8852786, lng: -117.2391227 },
     { name: "Bay Club Carmel Valley", addr: "12000 Carmel Country Rd, San Diego", contact: "Sally Norgate", lat: 32.94508, lng: -117.220778 },
     { name: "Santa Barbara School of Squash", addr: "1530 Chapala St, Santa Barbara", contact: "Robert Graham", lat: 34.4260433, lng: -119.7102284 },
     { name: "UC Santa Barbara", addr: "Recreation Center, Santa Barbara", contact: "Tim Thomas", lat: 34.4182658, lng: -119.8489656 }
@@ -1439,7 +1471,7 @@
     const popupHtml = `
       <div class="popup-name">${c.name}</div>
       <div class="popup-addr">${c.addr}</div>
-      ${c.contact ? `<div class="popup-contact">${c.contact}</div>` : ''}
+      ${c.contact ? `<div class="popup-contact"><button type="button" class="pro-link" data-pro="${c.contact}" data-club="${c.name}">${c.contact}</button></div>` : ''}
     `;
     L.marker([c.lat, c.lng], { icon: pinIcon }).addTo(map).bindPopup(popupHtml);
   });
@@ -1449,6 +1481,74 @@
   setTimeout(() => { map.invalidateSize(); }, 300);
   window.addEventListener('load', () => { map.invalidateSize(); });
   }
+</script>
+
+<div class="contact-modal" id="contactModal" role="dialog" aria-modal="true" aria-labelledby="ccName">
+  <div class="contact-card">
+    <button type="button" class="cc-close" id="ccClose" aria-label="Close">&times;</button>
+    <div class="cc-role" id="ccRole">Squash pro</div>
+    <h3 id="ccName"></h3>
+    <div class="cc-club" id="ccClub"></div>
+    <div class="cc-row"><span class="cc-label">Phone</span><span id="ccPhone"></span></div>
+    <div class="cc-row"><span class="cc-label">Email</span><span id="ccEmail"></span></div>
+    <p class="cc-note" id="ccNote" hidden>We don&rsquo;t have direct details for this contact yet. Email <a href="mailto:info@socalsquash.org">info@socalsquash.org</a> and we&rsquo;ll connect you.</p>
+  </div>
+</div>
+<script>
+(function(){
+  // EDIT ME: add or update a pro's phone/email here. Leave null if unknown.
+  const PROS = {
+    "Brett Newton":      { phone: "213-625-2211",            email: "brett.newton@laac.net" },
+    "Gus Cook":          { phone: "213-624-0881",            email: "gcook@jc.org",
+                          clubs: { "South End Racquet & Health Club": { phone: "443-622-0360", email: "guscook29@hotmail.com" } } },
+    "Aria Fazelimanesh": { phone: null,             email: "aria@squashacademy.la",
+                          clubs: { "Los Angeles Squash Academy": { phone: "626-214-8155" } } },
+    "Petr Husek":        { phone: "(949) 975-8400",             email: "Petr.Husek@equinox.com" },
+    "Sam Daye":          { phone: "(714) 514-3644", email: "membership@loscab.com" },
+    "Renato Paiva":      { phone: "619-795-8727",            email: "info@accessyouthacademy.org" },
+    "Robert Graham":     { phone: null,             email: "robert@sbsos.org" },
+    "Club Contact":      { phone: null, email: null, role: "Club phone",
+                          clubs: { "Caltech Braun Athletic Center": { phone: "(626) 395-3253" },
+                                   "UCLA Recreation":              { phone: "(310) 206-8307" },
+                                   "USC Lyon Center":              { phone: "(213) 740-5127" },
+                                   "YMCA Ketchum Downtown":        { phone: "(213) 624-2348" },
+                                   "Equinox Sports Club — West LA": { phone: "(310) 473-1447" },
+                                   "TRIFIT Club & Studios":        { phone: "(310) 829-2227" },
+                                   "UC San Diego — RIMAC":         { phone: "(858) 534-3557" } } },
+    "Sally Norgate":     { phone: null,             email: null },
+    "Tim Thomas":        { phone: "(805) 893-7619",             email: null }
+  };
+  const modal = document.getElementById('contactModal');
+  if (!modal) return;
+  let opener = null;
+  function fill(id, value, href){
+    const box = document.getElementById(id); box.replaceChildren();
+    if (!value){ const n = document.createElement('span'); n.className = 'cc-none'; n.textContent = 'Not listed'; box.append(n); return; }
+    const a = document.createElement('a'); a.href = href; a.textContent = value; box.append(a);
+  }
+  function open(btn){
+    const name = btn.dataset.pro;
+    let club = btn.dataset.club;
+    if (!club){ const item = btn.closest('.club-item'); const c = item && item.querySelector('.club-name'); club = c ? c.textContent : ''; }
+    const base = PROS[name] || {};
+    const info = Object.assign({}, base, (base.clubs && base.clubs[club]) || {});   // club-specific details win
+    document.getElementById('ccName').textContent = name;
+    document.getElementById('ccClub').textContent = club;
+    fill('ccPhone', info.phone, info.phone ? 'tel:' + info.phone.replace(/[^\d+]/g, '') : '');
+    fill('ccEmail', info.email, info.email ? 'mailto:' + info.email : '');
+    document.getElementById('ccNote').hidden = !!(info.phone || info.email);
+    document.getElementById('ccRole').textContent = info.role || 'Squash pro';
+    opener = btn; modal.classList.add('open');
+    document.getElementById('ccClose').focus();
+  }
+  function close(){ modal.classList.remove('open'); if (opener) opener.focus(); }
+  document.addEventListener('click', e => {
+    const b = e.target.closest('.pro-link');
+    if (b){ open(b); return; }
+    if (e.target === modal || e.target.id === 'ccClose') close();
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && modal.classList.contains('open')) close(); });
+})();
 </script>
 
 </body>
