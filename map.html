@@ -845,7 +845,7 @@
   .playnow .intro h1{ font-family:'Press Start 2P','Courier New',monospace; font-size: clamp(1.3rem, 3.4vw, 2.1rem);
     line-height:1.3; color: var(--court-blue); margin: 0 0 14px; text-shadow: 3px 3px 0 var(--hot-pink); }
   .playnow .intro p{ max-width: 640px; color: var(--slate); margin: 0 0 26px; }
-  .map-layout{ display:grid; grid-template-columns: minmax(0, 1fr); gap: 26px; align-items:start; }
+  .map-layout{ display:grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 26px; align-items:start; }
   @media (max-width: 960px){ .map-layout{ grid-template-columns: 1fr; } }
 
   .pxmap-frame{ background:#EBD7B2; padding: 10px; border: 4px solid #000; box-shadow: 0 0 0 4px #594a18 inset, 8px 8px 0 var(--court-blue); }
@@ -1003,11 +1003,20 @@
   .fac-list canvas{ width:28px; height:28px; image-rendering: pixelated; flex:none; }
   .fac-list .nm{ font-weight:600; font-size:.92rem; line-height:1.2; }
   .fac-list .ad{ font-size:.78rem; color: var(--slate); }
-  .map-layout > div:nth-child(2){ display:grid; grid-template-columns: minmax(0, 420px) minmax(0, 1fr); gap: 20px 28px; align-items:start; grid-template-rows: min-content 1fr; }
-  .map-layout > div:nth-child(2) .side-card{ grid-column:1; grid-row:1; }
-  .map-layout > div:nth-child(2) .fac-list{ grid-column:2; grid-row:1 / span 2; margin:0; }
-  .map-layout > div:nth-child(2) .elsewhere{ grid-column:1; grid-row:2; margin:0; }
-  @media (max-width: 900px){ .map-layout > div:nth-child(2){ grid-template-columns: 1fr; } .map-layout > div:nth-child(2) .fac-list, .map-layout > div:nth-child(2) .elsewhere, .map-layout > div:nth-child(2) .side-card{ grid-column:1; grid-row:auto; } }
+  .fac-title{ font-family:'Press Start 2P','Courier New',monospace; font-size:.62rem; letter-spacing:.06em; color:var(--court-blue); margin:0 0 12px; line-height:1.6; }
+  .fac-list{ margin:0; max-height: clamp(440px, 74vh, 760px); overflow:auto; padding:2px 6px 8px 2px; }
+  .fac-list li[hidden]{ display:none; }
+  .map-layout > div:nth-child(2) .elsewhere{ margin-top:16px; font-size:.85rem; }
+  .club-tip{ position:absolute; left:calc(var(--x) * var(--z) * 1px); top:calc(var(--y) * var(--z) * 1px); transform:translate(-50%, calc(-100% - 44px)); z-index:25; width:250px; background:#FFF1D1; border:4px solid #000; box-shadow:0 0 0 3px #594a18 inset, 4px 4px 0 var(--hot-pink); padding:12px 14px 10px; color:var(--ink); cursor:default; animation: pop-in .25s steps(4); }
+  .club-tip::after{ content:""; position:absolute; left:50%; top:100%; transform:translateX(-50%); border:9px solid transparent; border-top-color:#000; }
+  .club-tip .nm{ font-family:var(--display); font-size:1.05rem; line-height:1.15; color:var(--court-blue); font-weight:700; padding-right:16px; }
+  .club-tip .ad{ font-size:.76rem; color:var(--slate); margin:3px 0 8px; }
+  .club-tip dl{ margin:0; } .club-tip .row{ display:flex; gap:8px; padding:5px 0; border-top:2px dotted #b49c6c; font-size:.82rem; }
+  .club-tip dt{ width:56px; flex:none; font-size:.62rem; letter-spacing:.07em; text-transform:uppercase; color:var(--slate); padding-top:2px; } .club-tip dd{ margin:0; word-break:break-word; font-weight:600; }
+  .club-tip a{ color:var(--accent-text); } .club-tip .none{ color:var(--slate); font-weight:400; }
+  .club-tip .btn-dir{ display:inline-block; margin-top:8px; padding:7px 10px; background:var(--court-blue); color:#fff !important; text-decoration:none; font:400 8px 'Press Start 2P','Courier New',monospace; letter-spacing:.05em; box-shadow:2px 2px 0 var(--hot-pink); }
+  .club-tip .x{ position:absolute; right:4px; top:2px; background:none; border:0; font:700 18px/1 sans-serif; cursor:pointer; color:var(--court-blue); padding:2px 6px; }
+  @media (max-width: 960px){ .map-layout{ grid-template-columns: 1fr; } .fac-list{ max-height:none; } }
   .elsewhere{ margin-top: 20px; font-size:.9rem; color: var(--slate); }
   .elsewhere a{ color: var(--accent-text); font-weight:600; }
 </style>
@@ -1059,11 +1068,7 @@
         </div>
       </div>
       <div>
-        <div class="side-card" id="sideCard" aria-live="polite">
-          <div class="tag">&#9654; SELECT A FACILITY</div>
-          <h2>Choose a club</h2>
-          <div class="addr">Tap a pair of crossed racquets on the map, or pick a club from the list and the map will fly there.</div>
-        </div>
+        <h3 class="fac-title" id="facTitle">Clubs</h3>
         <ul class="fac-list" id="facList"></ul>
         <p class="elsewhere">Looking beyond LA? <a href="index.html#clubs">See every club from San Luis Obispo to San Diego</a>.</p>
       </div>
@@ -2211,7 +2216,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
     vw = Math.ceil(r.width / Z); vh = Math.ceil(r.height / Z);
     if (overview || lowres){ if (canvas.width !== Math.round(r.width)) canvas.width = Math.round(r.width); if (canvas.height !== Math.round(r.height)) canvas.height = Math.round(r.height); canvas.style.width = canvas.width + 'px'; canvas.style.height = canvas.height + 'px'; }
     else { canvas.width = vw; canvas.height = vh; canvas.style.width = vw * Z + 'px'; canvas.style.height = vh * Z + 'px'; }
-    cx.imageSmoothingEnabled = false; vp.style.setProperty('--z', Z); vp.classList.toggle('overview', overview); vp.classList.toggle('lowres', lowres); vp.classList.toggle('widest', !overview && zi === LEVELS.length - 1); setCam(camX, camY); dirty = true; requestAnimationFrame(layout);
+    cx.imageSmoothingEnabled = false; vp.style.setProperty('--z', Z); vp.classList.toggle('overview', overview); vp.classList.toggle('lowres', lowres); vp.classList.toggle('widest', !overview && zi === LEVELS.length - 1); setCam(camX, camY); dirty = true; requestAnimationFrame(layout); if (typeof renderList === 'function' && curKey) renderList();
     const zi_ = document.getElementById('zoomIn'), zo_ = document.getElementById('zoomOut'); if (zi_){ zi_.disabled = zi === 0 && !overview; zo_.disabled = overview; }
   }
   function leaveFit(){ if (!fitBox) return; fitBox = null; zi = prevView ? prevView.zi : 0; resize(); if (prevView) setCam(prevView.x, prevView.y); prevView = null; }
@@ -2282,12 +2287,54 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   const REG_CITIES = [['SANTA BARBARA',-119.55,34.66],['SAN LUIS OBISPO',-120.35,35.30],['SANTA MARIA',-120.20,34.98],['LANCASTER',-118.15,34.70],['BAKERSFIELD',-118.95,35.45],['RIVERSIDE',-117.42,33.97],['VENTURA',-119.22,34.30],['LOS ANGELES',-118.0,34.42],['LONG BEACH',-118.3,33.62],['IRVINE',-117.55,33.74],['OCEANSIDE',-117.45,33.25],['SAN DIEGO',-116.78,32.78],['PACIFIC OCEAN',-119.7,33.50]];
   const rb = (lon, lat) => [fx(lon) * TS, fy(lat) * TS];
   const regPath = (ctx, pts) => { ctx.beginPath(); pts.forEach((q, k) => { const w = rb(q[0], q[1]); k ? ctx.lineTo(w[0], w[1]) : ctx.moveTo(w[0], w[1]); }); };
+
+  /* ---- overview flora & fauna (sparse, Southern California natives) ---- */
+  const FPAL = { D: '#1F5A22', G: '#3E9B3A', g: '#63BC4B', T: '#6B4423', S: '#79B84F', s: '#B8D77A', B: '#8B5A2B', b: '#C08A55', Y: '#C9A15A', K: '#2B0B4F', W: '#FFFFFF', N: '#1B3FA0', n: '#4F86E8', O: '#E8913A' };
+  const FSPR_SRC = {
+    oak: ['...DDD...', '..DGGGD..', '.DGgGGGD.', '.DGGGgGD.', '..DGGGD..', '...DTD...', '....T....'],
+    pine: ['...D...', '..DGD..', '..DGD..', '.DGGGD.', '..DGD..', '.DGGGD.', 'DGGGGGD', '...T...', '...T...'],
+    palm: ['..DGDGD..', '.DGGDGGD.', 'DG..T..GD', '....T....', '....T....', '....T....', '....T....'],
+    joshua: ['.G...G.', '.G.G.G.', '.GGGGG.', '...G...', '...T...', '...T...'],
+    cactus: ['..G....', 'G.G..G.', 'G.G..G.', 'GGGGGG.', '..G....', '..G....'],
+    shrub: ['.sSs.', 'sSgSs', 'DDDDD'],
+    deer: ['......b.b.', '.......BB.', '.BBBBBBBB.', '.BBBBBBBB.', '.B.B..B.B.'],
+    coyote: ['.......YY.', 'Y.YYYYYYYY', 'YYYYYYYYY.', '.Y.Y..Y.Y.'],
+    condor: ['K.....K', '.KK.KK.', '...K...'],
+    whale: ['N.....N', 'NN...NN', '.NN.NN.', '..NNN..', '...N...', '..nWn..'],
+    dolphin: ['....NN.', '..NNNNN', 'NNNNNN.', 'nn.NN..']
+  };
+  const FSPR = {}; function fspr(k){ if (FSPR[k]) return FSPR[k]; const rows = FSPR_SRC[k], c = document.createElement('canvas'); c.width = rows[0].length; c.height = rows.length; const g = c.getContext('2d');
+    rows.forEach((r, y) => { for (let X = 0; X < r.length; X++){ if (r[X] !== '.'){ g.fillStyle = FPAL[r[X]]; g.fillRect(X, y, 1, 1); } } }); return (FSPR[k] = c); }
+  let FLORA = null;
+  function buildFlora(){
+    let a = 123456789; const rnd = () => { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; };
+    const inPoly = (lo, la) => { let ins = false; for (let i = 0, j = REG_LAND.length - 1; i < REG_LAND.length; j = i++){ const xi = REG_LAND[i][0], yi = REG_LAND[i][1], xj = REG_LAND[j][0], yj = REG_LAND[j][1]; if (((yi > la) !== (yj > la)) && (lo < (xj - xi) * (la - yi) / (yj - yi) + xi)) ins = !ins; } return ins; };
+    const coastD = (lo, la) => { let best = 9, k = Math.cos(la * Math.PI / 180); for (let i = 0; i < REG_COAST.length - 1; i++){ const ax = REG_COAST[i][0], ay = REG_COAST[i][1], bx = REG_COAST[i + 1][0], by = REG_COAST[i + 1][1], dx = (bx - ax) * k, dy = by - ay, L = dx * dx + dy * dy || 1e-9; let t = (((lo - ax) * k) * dx + (la - ay) * dy) / L; t = Math.max(0, Math.min(1, t)); const px = ax * k + dx * t, py = ay + dy * t, d = Math.hypot(lo * k - px, la - py); if (d < best) best = d; } return best; };
+    const urban = (lo, la) => (lo > -118.65 && lo < -117.75 && la > 33.72 && la < 34.12) || (lo > -117.95 && lo < -117.55 && la > 33.45 && la < 33.9) || (lo > -117.3 && lo < -117.0 && la > 32.6 && la < 33.0) || (lo > -119.9 && lo < -119.5 && la > 34.38 && la < 34.45);
+    const desert = (lo, la) => (lo > -118.15 && la > 34.45) || lo > -117.2 || (lo > -118.4 && la > 34.42);
+    const mount = (lo, la) => (la > 34.17 && la < 34.45 && lo > -118.45 && lo < -117.0) || (la > 34.46 && lo < -119.2) || (la > 33.2 && la < 33.6 && lo > -117.4 && lo < -116.9);
+    const out = [], want = { oak: 40, pine: 22, palm: 16, joshua: 12, cactus: 8, shrub: 40, deer: 4, coyote: 3, condor: 3, whale: 3, dolphin: 4 }, have = {};
+    const ok = (lo, la, minD) => out.every(f => Math.hypot((f.lo - lo) * .83, f.la - la) > minD);
+    for (let tries = 0; tries < 9000; tries++){ const lo = -120.2 + rnd() * 3.4, la = 32.5 + rnd() * 2.25, land = inPoly(lo, la); if (!land && !(lo > -120.2)) continue;
+      const cd = coastD(lo, la); let t = null;
+      if (!land){ if (cd < .22 || cd > .9 || la > 34.4 && lo > -119.9) continue; t = rnd() < .45 ? 'whale' : 'dolphin'; }
+      else if (cd < .035) continue;
+      else if (urban(lo, la)){ if (cd < .12 && rnd() < .5) t = 'palm'; else if (rnd() < .12) t = 'oak'; else continue; }
+      else if (mount(lo, la)) t = rnd() < .08 ? (rnd() < .5 ? 'deer' : 'condor') : (rnd() < .65 ? 'pine' : (rnd() < .5 ? 'oak' : 'shrub'));
+      else if (desert(lo, la)) t = rnd() < .04 ? 'coyote' : (rnd() < .55 ? 'joshua' : (rnd() < .4 ? 'cactus' : 'shrub'));
+      else if (cd < .09) t = rnd() < .6 ? 'palm' : 'shrub';
+      else t = rnd() < .5 ? 'oak' : (rnd() < .06 ? 'coyote' : 'shrub');
+      if ((have[t] || 0) >= want[t]) continue; if (!ok(lo, la, t === 'shrub' ? .05 : .09)) continue; have[t] = (have[t] || 0) + 1; out.push({ t, lo, la }); }
+    return out; }
+  function drawFlora(){ if (!FLORA) FLORA = buildFlora(); cx.save(); cx.setTransform(1, 0, 0, 1, 0, 0); cx.imageSmoothingEnabled = false; const sc = 2, W = canvas.width, H = canvas.height;
+    FLORA.forEach(f => { const sp = fspr(f.t), X = Math.round((fx(f.lo) * TS - camX) * Z - sp.width * sc / 2), Y = Math.round((fy(f.la) * TS - camY) * Z - sp.height * sc); if (X < -30 || Y < -30 || X > W + 30 || Y > H + 30) return; cx.drawImage(sp, X, Y, sp.width * sc, sp.height * sc); }); cx.restore(); }
   function drawRegional(){
     cx.setTransform(1, 0, 0, 1, 0, 0); cx.fillStyle = P.w2; cx.fillRect(0, 0, canvas.width, canvas.height);
     cx.setTransform(Z, 0, 0, Z, -camX * Z, -camY * Z); cx.lineJoin = 'round'; cx.lineCap = 'round';
     regPath(cx, REG_LAND); cx.closePath(); cx.fillStyle = '#8FCF6B'; cx.fill();
     cx.save(); regPath(cx, REG_LAND); cx.closePath(); cx.clip(); regPath(cx, REG_COAST); cx.lineWidth = 16 / Z; cx.strokeStyle = P.sand1; cx.stroke(); regPath(cx, REG_COAST); cx.lineWidth = 8 / Z; cx.strokeStyle = P.sand2; cx.stroke(); cx.restore();
     regPath(cx, REG_COAST); cx.lineWidth = 2.5 / Z; cx.strokeStyle = '#FFFFFF'; cx.stroke();
+    drawFlora(); cx.setTransform(Z, 0, 0, Z, -camX * Z, -camY * Z);
     REG_ROADS.forEach(r => { regPath(cx, r[1]); cx.lineWidth = 6 / Z; cx.strokeStyle = '#2B0B4F'; cx.stroke(); }); REG_ROADS.forEach(r => { regPath(cx, r[1]); cx.lineWidth = 3.4 / Z; cx.strokeStyle = '#FF8A1F'; cx.stroke(); });
     cx.setTransform(1, 0, 0, 1, 0, 0); }
 
@@ -2307,33 +2354,40 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   const onMap = (c) => c.lat >= LAT0 && c.lat <= LAT1 && c.lng >= LON0 && c.lng <= LON1;
   const details = (c) => { const base = PROS[c.contact] || {}; const info = Object.assign({}, base, (base.clubs && base.clubs[c.name]) || {});
     return { name: c.contact, role: info.role || 'Squash pro', phone: info.phone || null, email: info.email || null }; };
-  const card = document.getElementById('sideCard'), list = document.getElementById('facList'), markers = [];
+  const list = document.getElementById('facList'), facTitle = document.getElementById('facTitle'), markers = []; let tipEl = null, tipWanted = false;
   function row(label, valueNode){ const r = el_('div', 'row'); r.append(el_('dt', null, label)); const dd = el_('dd'); dd.append(valueNode); r.append(dd); return r; }
   function link(text, href){ const a = el_('a', null, text); a.href = href; return a; }
   function none(){ return el_('span', 'none', 'Not listed'); }
-  function select(c, how){
-    const d = details(c); card.replaceChildren();
-    card.append(el_('div', 'tag', '▶ SQUASH FACILITY')); card.append(el_('h2', null, c.name)); card.append(el_('div', 'addr', c.addr));
-    const dl = el_('dl');
-    dl.append(row(d.role === 'Club phone' ? 'Contact' : 'Pro', el_('span', null, d.role === 'Club phone' ? 'Front desk / club line' : (d.name || 'Not listed'))));
+  function hideTip(){ if (tipEl){ tipEl.remove(); tipEl = null; } }
+  function showTip(c){ hideTip(); if (regionOf(c.lat, c.lng) !== curKey) return; const d = details(c); const t = el_('div', 'club-tip map-ui'); t.style.setProperty('--x', fx(c.lng) * TS); t.style.setProperty('--y', fy(c.lat) * TS);
+    const x = el_('button', 'x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', e => { e.stopPropagation(); tipWanted = false; hideTip(); });
+    t.append(x, el_('div', 'nm', c.name), el_('div', 'ad', c.addr)); const dl = el_('dl');
+    dl.append(row(d.role === 'Club phone' ? 'Contact' : 'Head Pro', el_('span', null, d.role === 'Club phone' ? 'Front desk / club line' : (d.name || 'Not listed'))));
     dl.append(row('Phone', d.phone ? link(d.phone, 'tel:' + d.phone.replace(/[^\d+]/g, '')) : none()));
-    dl.append(row('Email', d.email ? link(d.email, 'mailto:' + d.email) : none())); card.append(dl);
-        const dir = link('GET DIRECTIONS', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(c.name + ', ' + c.addr)); dir.className = 'btn-dir'; dir.target = '_blank'; dir.rel = 'noopener'; card.append(dir);
+    dl.append(row('Email', d.email ? link(d.email, 'mailto:' + d.email) : none())); t.append(dl);
+    const dir = link('GET DIRECTIONS', 'https://www.google.com/maps/search/?api=1&query=' + encodeURIComponent(c.name + ', ' + c.addr)); dir.className = 'btn-dir'; dir.target = '_blank'; dir.rel = 'noopener'; t.append(dir);
+    ['pointerdown', 'dblclick', 'wheel'].forEach(ev => t.addEventListener(ev, e => e.stopPropagation()));
+    world.append(t); tipEl = t;
+    requestAnimationFrame(() => { if (!tipEl || flying) return; const rv = vp.getBoundingClientRect(), tr = tipEl.getBoundingClientRect(); let dx = 0, dy = 0; if (tr.top < rv.top + 8) dy = tr.top - rv.top - 8; if (tr.left < rv.left + 8) dx = tr.left - rv.left - 8; else if (tr.right > rv.right - 8) dx = tr.right - rv.right + 8; if (dx || dy) setCam(camX + dx / Z, camY + dy / Z); }); }
+  function select(c, how){
     selected = c; markers.forEach(m => { const on = m.c === c; if (m.btn) m.btn.classList.toggle('active', on); m.li.classList.toggle('active', on); });
-    if (how === 'list'){ setMarkers(true); const rk = regionOf(c.lat, c.lng); if (!rk) enterFit(); else goRegion(rk).then(() => panTo(c.lng, c.lat)); }
-    if (how !== 'marker' && window.innerWidth <= 960) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    if (how === 'car'){ tipWanted = false; hideTip(); } else { tipWanted = true; if (how !== 'list') showTip(c); }
+    if (how === 'list'){ setMarkers(true); const rk = regionOf(c.lat, c.lng); if (!rk) enterFit(); else goRegion(rk).then(() => { panTo(c.lng, c.lat); showTip(c); }); }
   }
   clubs.forEach(c => {
     const m = { c, btn: null, li: null };
     const li = el_('li'), lb = el_('button'); lb.type = 'button'; lb.append(iconCanvas());
     const wrap = el_('div'); wrap.append(el_('div', 'nm', c.name)); wrap.append(el_('div', 'ad', c.addr)); lb.append(wrap); li.append(lb); list.append(li);
-    m.li = lb; markers.push(m); lb.addEventListener('click', () => select(c, 'list')); lb.addEventListener('dblclick', () => enterCounty(c)); });
+    m.li = lb; m.item = li; markers.push(m); lb.addEventListener('click', () => select(c, 'list')); lb.addEventListener('dblclick', () => enterCounty(c)); });
 
+  let listKey = '';
+  function renderList(){ const k = (overview ? 'all' : curKey) || 'la'; if (k === listKey) return; listKey = k; let n = 0; markers.forEach(m => { const show = k === 'all' || regionOf(m.c.lat, m.c.lng) === k; m.item.hidden = !show; if (show) n++; });
+    if (facTitle) facTitle.textContent = (k === 'all' ? 'All squash clubs' : REGIONS[k].name + ' clubs') + ' (' + n + ')'; }
   /* ============ REGIONS (counties) ============ */
   const REGIONS = { la: LA, oc: OC, sd: SD, sb: SB }; let RG = LA, curKey = null; const snaps = {};
   function regionOf(lat, lon){ for (const k of Object.keys(REGIONS)){ const r = REGIONS[k]; if (lat >= r.LAT0 && lat <= r.LAT1 && lon >= r.LON0 && lon <= r.LON1) return k; } return null; }
   function buildOverlays(){
-    world.replaceChildren();
+    tipEl = null; world.replaceChildren();
     RG.LABELS.forEach(l => { const e = el_('div', 'map-label ' + l[3], l[0]); e.style.setProperty('--x', fx(l[1]) * TS); e.style.setProperty('--y', fy(l[2]) * TS); world.appendChild(e); });
     REG_CITIES.forEach(c => { const e = el_('div', 'map-label reg' + (c[0] === 'PACIFIC OCEAN' ? ' sea' : ''), c[0]); const w = rb(c[1], c[2]); e.style.setProperty('--x', w[0]); e.style.setProperty('--y', w[1]); world.appendChild(e); });
     markers.forEach(m => { const c = m.c, btn = el_('button', 'club-marker'); btn.type = 'button'; btn.style.setProperty('--x', fx(c.lng) * TS); btn.style.setProperty('--y', fy(c.lat) * TS);
@@ -2357,7 +2411,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   function goRegion(key){ stopFlight(); return new Promise(res => { if (key === curKey && !fitBox){ res(); return; } if (key === curKey){ leaveFit(); res(); return; }
     ldEl.classList.remove('gone'); setTimeout(() => { switchRegion(key); ldEl.classList.add('gone'); res(); }, 50); }); }
   document.querySelectorAll('#regTabs button').forEach(b => b.addEventListener('click', () => { if (showFac && showFac.checked){ setMarkers(false); } goRegion(b.dataset.r).then(frameClubs); }));
-  function enterCounty(c){ const rk = regionOf(c.lat, c.lng); if (!rk) return; select(c, 'marker'); setMarkers(true); stopCar(); goRegion(rk).then(() => { if (zi > 0){ zi = 0; resize(); } panTo(c.lng, c.lat); }); }
+  function enterCounty(c){ const rk = regionOf(c.lat, c.lng); if (!rk) return; select(c, 'marker'); setMarkers(true); stopCar(); goRegion(rk).then(() => { if (zi > 0){ zi = 0; resize(); } panTo(c.lng, c.lat); showTip(c); }); }
   let selected = null, homePos = null;
 
   /* ============ HOME ADDRESS -> squash ball pin ============ */
@@ -2440,7 +2494,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
       const k = sg ? (dist - sg.s) / sg.L : 1, X = sg ? sg.a[0] + (sg.b[0] - sg.a[0]) * k : S[0] * TS, Y = sg ? sg.a[1] + (sg.b[1] - sg.a[1]) * k : S[1] * TS;
       if (sg && Math.abs(sg.b[0] - sg.a[0]) > 0.5) dir = sg.b[0] > sg.a[0] ? 1 : -1; draw(Math.floor(t / 90) & 1, dir); place(X, Y);
       if (t >= t0 && !fitBox && !flying) setCam(X - vw / 2, Y - vh / 2);
-      if (dist < total) carAnim = requestAnimationFrame(step); else { draw(0, dir); setMarkers(true); select(c, 'marker'); showPop(c); say('Arrived: ' + c.name + '.'); } };
+      if (dist < total) carAnim = requestAnimationFrame(step); else { draw(0, dir); setMarkers(true); select(c, 'car'); showPop(c); say('Arrived: ' + c.name + '.'); } };
     if (overview){ fitBox = null; prevView = null; zi = 0; resize(); } carAnim = requestAnimationFrame(step); }
 
 
