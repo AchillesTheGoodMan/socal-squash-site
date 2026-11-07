@@ -863,6 +863,15 @@
   .contact-card a{ color: var(--accent-text); font-weight: 600; word-break: break-all; }
   .contact-card .cc-none{ color: var(--slate); }
   .contact-card .cc-note{ margin: 12px 0 0; font-size: .85rem; color: var(--slate); }
+
+  /* -------- tiny squash-court easter egg (footer, bottom right) -------- */
+  footer{ position:relative; padding-bottom:84px; }
+  .heat-door{ position:absolute; right:18px; bottom:12px; width:80px; height:60px; opacity:.65; cursor:pointer; outline:none; transition:opacity .15s; }
+  .heat-door img{ width:100%; height:100%; display:block; image-rendering:pixelated; image-rendering:crisp-edges; }
+  .heat-door:hover, .heat-door:focus-visible{ opacity:1; }
+  .heat-door::after{ content:"Enter if you can handle the heat..."; position:absolute; right:0; bottom:calc(100% + 8px); white-space:nowrap; background:#14052B; color:#FFD23F; border:2px solid #FF2E93; padding:6px 9px; font:400 11px/1.2 'Press Start 2P','Courier New',monospace; letter-spacing:.03em; box-shadow:3px 3px 0 #000; opacity:0; transform:translateY(4px); transition:opacity .15s, transform .15s; pointer-events:none; }
+  .heat-door:hover::after, .heat-door:focus-visible::after{ opacity:1; transform:none; }
+  @media (max-width: 520px){ .heat-door::after{ white-space:normal; width:180px; font-size:9px; } }
 </style>
 </head>
 <body>
@@ -1152,6 +1161,7 @@
     <span>© 2026 SoCal Squash. All rights reserved.</span>
     <span>Los Angeles · Orange County · San Diego · Inland Empire</span>
   </div>
+  <a class="heat-door" href="heat.html" aria-label="Enter if you can handle the heat..."><img alt="" width="80" height="60" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACgAAAAeCAYAAABe3VzdAAAC70lEQVR4Xu2X30tTYRjHn0VFRVdZ3njSkqgDM/uBNw4q6iJaLbpIHQhKGF0MRcQigv6BiAqRyQihi4JBs6BQsrrIpFhdRNFoaD9IsUWQywrEoILF85w9Z+/O3vfsnFDxYl8Y5z3n7H3PZ9/nx3kHUFJJaq1f4c08epfJ4HFJ+cRgDIfHhQJd7uaXI1gs+YamnO2MmlN7el7ROHsv0+StgfSfpMfN2io5AhTBRkbTMHz7oXS9hQC1BZQ55j9+sKgx4x/m4P7Q23lxVAqoCqVML3Zsgk4F8nw4WpAnmOycY+iWLJx4/eTVE4RV93oSfKdumIiHAtvIPZm6unbRZTc5ukwVr4u9zdJbt9JRgkOw3x0eGB/eA/H+FvoUE4YeXcViclr1Uge5QhkSzxGMHUMo1kwqRcN1mga6/wmNRUdZ11sTEJ1pzHPXiaO2gCgE+xgdorEWP0ogIpQT0Lt9RmhRx9qNliTKDlRZxXmOTYVovYRvENAvLVUIWq43wN/Z5wQf79+cdTQb9j6jd6pkrfoDWz2mcVIHq5sDlGP8IKtjicpInqNl3V7z2d+uJGksztndlgPcGegt4MTC0resMa/bAvJ7lfNMfJAKdH9D2Fz8ffcDcg81e+4THfd+/Wnen/vyPS9HObzckvBcBCwIMb+idD9Qu7EDrQUj9FU/cg691GpMMKxyhB2rj8HngSBUNN6EX89Og+5v4SZuhlclZQ66ARWF4a+GAKy9sDEX6oEgXLuTiLRBMJTyDUIsCVA7FbKtelZBDqpkF/rV9Zdhel8TbBiNkUOco5jLCFpWPgYjqx7T0ghmTRWxPVlD7BiQJYJyjiHEpfC9yJmOwyHx4QzKYNbiUYGKOyHXgKjJuiMZrHLOUbu+iCF9er4KWie20/fzQm9p8CjrNu2/AEWJjspA0UWxwa8MG5tvBOXQysBc52AxqUAR0Jp3TsBYjjasTiSrenK00pide1dP2Dq2aEJHxT9VfL5oAE61ZMFKKsmh/gEbvNpY8Lp4TQAAAABJRU5ErkJggg=="></a>
 </footer>
 
 <script>
