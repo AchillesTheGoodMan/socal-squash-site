@@ -848,6 +848,13 @@
   .heat-page .court.sm{ width:80px; height:60px; margin-bottom:14px; }
   .heat-page .arcade{ max-width: 960px; margin: 8px auto 14px; border:4px solid #000; background:#000; box-shadow: 0 0 0 4px #594a18 inset, 8px 8px 0 var(--hot-pink); padding:10px; }
   .heat-page .arcade iframe{ display:block; width:100%; height: clamp(420px, 78vh, 760px); border:0; background:#000; }
+  .heat-page .arcade .poster{ min-height: clamp(380px, 60vh, 560px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:14px; padding:24px; background: radial-gradient(circle at 50% 40%, #2B0B4F 0%, #14052B 70%); }
+  .heat-page .poster .ptag{ font-family:'Press Start 2P','Courier New',monospace; font-size:.6rem; color: var(--ball-yellow); letter-spacing:.08em; animation: heat-blink 1s steps(2) infinite; }
+  @keyframes heat-blink{ 50%{ opacity:.25; } }
+  .heat-page .poster .ptitle{ font-family:'Press Start 2P','Courier New',monospace; font-size: clamp(2rem, 8vw, 4rem); color:#FFF0D1; text-shadow:4px 4px 0 var(--hot-pink); }
+  .heat-page .poster .psub{ color: var(--chalk-dim); }
+  .heat-page .poster .phint{ color: var(--chalk-dim); font-size:.8rem; max-width:420px; }
+  .heat-page .poster button{ border:0; cursor:pointer; margin:6px 0 0; }
   .heat-page .keys{ font-family:'Press Start 2P','Courier New',monospace; font-size:.55rem; letter-spacing:.06em; color: var(--ball-yellow); margin: 12px 0 22px; line-height:1.8; }
   .heat-page .back{ margin:0 6px 10px; }
   .heat-page .back.alt{ background:transparent; color: var(--chalk); border:2px solid var(--chalk); box-shadow:none; }
@@ -878,8 +885,14 @@
     <div class="tag">&#9654; YOU MADE IT IN</div>
     <h1>The Heat</h1>
     <p>Insert a coin, press start and play. Two devices can join the same game to play head to head.</p>
-    <div class="arcade">
-      <iframe id="gameFrame" title="Squash arcade game" src="https://squash-game.xeroshot.org/#9UVW" allow="fullscreen; gamepad; autoplay; microphone; clipboard-write" allowfullscreen referrerpolicy="no-referrer-when-downgrade"></iframe>
+    <div class="arcade" id="arcade">
+      <div class="poster" id="poster">
+        <div class="ptag">&#9654; PLAYER 1 READY</div>
+        <div class="ptitle">SQUASH</div>
+        <div class="psub">The 1992 arcade classic, in your browser</div>
+        <button type="button" class="back" id="playHere">INSERT COIN: PLAY HERE &#9654;</button>
+        <div class="phint">If the game doesn&rsquo;t appear here, use &ldquo;Open game in a new tab&rdquo; below.</div>
+      </div>
     </div>
     <div class="keys">Arrows move &middot; Z hard shot &middot; X soft shot &middot; C coin &middot; Enter start</div>
     <a class="back" href="https://squash-game.xeroshot.org/#9UVW" target="_blank" rel="noopener">OPEN GAME IN A NEW TAB &#9654;</a>
@@ -923,6 +936,18 @@
 <script>
 (function(){var t=document.getElementById('navToggle'),n=document.getElementById('navLinks');
 if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})();
+</script>
+<script>
+(function(){
+  var btn=document.getElementById('playHere'), box=document.getElementById('arcade');
+  if(!btn) return;
+  btn.addEventListener('click', function(){
+    var f=document.createElement('iframe'); f.id='gameFrame'; f.title='Squash arcade game';
+    f.src='https://squash-game.xeroshot.org/#9UVW';
+    f.setAttribute('allow','fullscreen; gamepad; autoplay; microphone; clipboard-write'); f.setAttribute('allowfullscreen','');
+    box.classList.add('live'); box.replaceChildren(f); f.focus();
+  });
+})();
 </script>
 </body>
 </html>
