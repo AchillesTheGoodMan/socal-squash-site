@@ -855,6 +855,11 @@
   .heat-page .poster .psub{ color: var(--chalk-dim); }
   .heat-page .poster .phint{ color: var(--chalk-dim); font-size:.8rem; max-width:420px; }
   .heat-page .poster button{ border:0; cursor:pointer; margin:6px 0 0; }
+  .heat-page .lobby{ display:flex; flex-wrap:wrap; gap:10px 14px; align-items:center; justify-content:center; margin:10px 0 0; }
+  .heat-page .lobby[hidden]{ display:none; }
+  .heat-page .lobby .lcode{ font-family:'Press Start 2P','Courier New',monospace; font-size:.6rem; letter-spacing:.06em; color: var(--chalk); } .heat-page .lobby b{ color: var(--ball-yellow); }
+  .heat-page .lobby .mini{ background:transparent; color: var(--chalk); border:2px solid var(--chalk); padding:8px 10px; cursor:pointer; font-family:'Press Start 2P','Courier New',monospace; font-size:.5rem; letter-spacing:.05em; }
+  .heat-page .lobby .mini:hover{ background: var(--hot-pink); border-color: var(--hot-pink); }
   .heat-page .keys{ font-family:'Press Start 2P','Courier New',monospace; font-size:.55rem; letter-spacing:.06em; color: var(--ball-yellow); margin: 12px 0 22px; line-height:1.8; }
   .heat-page .back{ margin:0 6px 10px; }
   .heat-page .back.alt{ background:transparent; color: var(--chalk); border:2px solid var(--chalk); box-shadow:none; }
@@ -894,8 +899,13 @@
         <div class="phint">If the game doesn&rsquo;t appear here, use &ldquo;Open game in a new tab&rdquo; below.</div>
       </div>
     </div>
+    <div class="lobby" id="lobbyBar" hidden>
+      <span class="lcode">LOBBY <b id="lobbyCode">#0000</b></span>
+      <button type="button" class="mini" id="copyLink">COPY INVITE LINK</button>
+      <button type="button" class="mini" id="newLobby">NEW LOBBY</button>
+    </div>
     <div class="keys">Arrows move &middot; Z hard shot &middot; X soft shot &middot; C coin &middot; Enter start</div>
-    <a class="back" href="https://squash-game.xeroshot.org/" target="_blank" rel="noopener">OPEN GAME IN A NEW TAB &#9654;</a>
+    <a class="back" id="openTab" href="https://squash-game.xeroshot.org/" target="_blank" rel="noopener">OPEN GAME IN A NEW TAB &#9654;</a>
     <a class="back alt" href="index.html">&#9664; BACK TO THE SITE</a>
   </div>
 </section>
@@ -939,13 +949,29 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
 </script>
 <script>
 (function(){
-  var btn=document.getElementById('playHere'), box=document.getElementById('arcade');
+  var BASE='https://squash-game.xeroshot.org/';
+  var btn=document.getElementById('playHere'), box=document.getElementById('arcade'),
+      bar=document.getElementById('lobbyBar'), codeEl=document.getElementById('lobbyCode'),
+      newTab=document.getElementById('openTab'), copyBtn=document.getElementById('copyLink'), newBtn=document.getElementById('newLobby');
   if(!btn) return;
-  btn.addEventListener('click', function(){
+  var url=BASE;
+  function newCode(){ return String(Math.floor(1000+Math.random()*9000)); }   // four-digit lobby code, e.g. 7234
+  function launch(code){
+    url=BASE+'#'+code;
     var f=document.createElement('iframe'); f.id='gameFrame'; f.title='Squash arcade game';
-    f.src='https://squash-game.xeroshot.org/';
     f.setAttribute('allow','fullscreen; gamepad; autoplay; microphone; clipboard-write'); f.setAttribute('allowfullscreen','');
-    box.classList.add('live'); box.replaceChildren(f); f.focus();
+    f.src=url;                                   // fresh iframe each time so the game starts clean in the new lobby
+    box.classList.add('live'); box.replaceChildren(f);
+    if(bar){ bar.hidden=false; codeEl.textContent='#'+code; }
+    if(newTab) newTab.href=url;
+    f.focus();
+  }
+  btn.addEventListener('click', function(){ launch(newCode()); });
+  if(newBtn) newBtn.addEventListener('click', function(){ launch(newCode()); });
+  if(copyBtn) copyBtn.addEventListener('click', function(){
+    var done=function(){ copyBtn.textContent='COPIED!'; setTimeout(function(){ copyBtn.textContent='COPY INVITE LINK'; },1800); };
+    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,function(){ window.prompt('Copy this link:',url); });
+    else window.prompt('Copy this link:',url);
   });
 })();
 </script>
