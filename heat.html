@@ -900,8 +900,7 @@
       </div>
     </div>
     <div class="lobby" id="lobbyBar" hidden>
-      <span class="lcode">LOBBY <b id="lobbyCode">#0000</b></span>
-      <button type="button" class="mini" id="copyLink">COPY INVITE LINK</button>
+      <span class="lcode">YOUR LOBBY CODE IS SHOWN IN THE GAME</span>
       <button type="button" class="mini" id="newLobby">NEW LOBBY</button>
     </div>
     <div class="keys">Arrows move &middot; Z hard shot &middot; X soft shot &middot; C coin &middot; Enter start</div>
@@ -949,30 +948,19 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
 </script>
 <script>
 (function(){
-  var BASE='https://squash-game.xeroshot.org/';
-  var btn=document.getElementById('playHere'), box=document.getElementById('arcade'),
-      bar=document.getElementById('lobbyBar'), codeEl=document.getElementById('lobbyCode'),
-      newTab=document.getElementById('openTab'), copyBtn=document.getElementById('copyLink'), newBtn=document.getElementById('newLobby');
+  /* Loads the game at its bare address, https://squash-game.xeroshot.org/ , with NO code added by us,
+     so the game itself generates its own #code and lobby, exactly as it does in a normal browser tab. */
+  var URL_='https://squash-game.xeroshot.org/';
+  var btn=document.getElementById('playHere'), box=document.getElementById('arcade'), bar=document.getElementById('lobbyBar'), newBtn=document.getElementById('newLobby');
   if(!btn) return;
-  var url=BASE;
-  function newCode(){ return String(Math.floor(1000+Math.random()*9000)); }   // four-digit lobby code, e.g. 7234
-  function launch(code){
-    url=BASE+'#'+code;
+  function launch(){
     var f=document.createElement('iframe'); f.id='gameFrame'; f.title='Squash arcade game';
     f.setAttribute('allow','fullscreen; gamepad; autoplay; microphone; clipboard-write'); f.setAttribute('allowfullscreen','');
-    f.src=url;                                   // fresh iframe each time so the game starts clean in the new lobby
-    box.classList.add('live'); box.replaceChildren(f);
-    if(bar){ bar.hidden=false; codeEl.textContent='#'+code; }
-    if(newTab) newTab.href=url;
-    f.focus();
+    f.src=URL_;                                  // brand-new frame on the bare link = a fresh load, so the game creates a new lobby code
+    box.classList.add('live'); box.replaceChildren(f); if(bar) bar.hidden=false; f.focus();
   }
-  btn.addEventListener('click', function(){ launch(newCode()); });
-  if(newBtn) newBtn.addEventListener('click', function(){ launch(newCode()); });
-  if(copyBtn) copyBtn.addEventListener('click', function(){
-    var done=function(){ copyBtn.textContent='COPIED!'; setTimeout(function(){ copyBtn.textContent='COPY INVITE LINK'; },1800); };
-    if(navigator.clipboard&&navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done,function(){ window.prompt('Copy this link:',url); });
-    else window.prompt('Copy this link:',url);
-  });
+  btn.addEventListener('click', launch);
+  if(newBtn) newBtn.addEventListener('click', launch);
 })();
 </script>
 </body>
