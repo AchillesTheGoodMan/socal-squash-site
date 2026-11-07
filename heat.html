@@ -956,6 +956,7 @@ if(t&&n)t.addEventListener('click',function(){n.classList.toggle('open');});})()
   function launch(){
     var f=document.createElement('iframe'); f.id='gameFrame'; f.title='Squash arcade game';
     f.setAttribute('allow','fullscreen; gamepad; autoplay; microphone; clipboard-write'); f.setAttribute('allowfullscreen','');
+    f.referrerPolicy='no-referrer';              // send no Referer, so the game sees the same request it gets from a local file
     f.src=URL_;                                  // brand-new frame on the bare link = a fresh load, so the game creates a new lobby code
     box.classList.add('live'); box.replaceChildren(f); if(bar) bar.hidden=false; f.focus();
   }
